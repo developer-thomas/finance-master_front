@@ -27,7 +27,7 @@ export class PrimeiroUsoComponent {
 
   readonly form = criarFormConta({ nome: 'Conta principal', tipo: 'CONTA_CORRENTE', saldoInicialCentavos: 0 });
 
-  criarConta(): void {
+  async criarConta(): Promise<void> {
     this.erro.set('');
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -35,7 +35,7 @@ export class PrimeiroUsoComponent {
     }
     const { nome, tipo, saldoInicial } = this.form.getRawValue();
     try {
-      this.contas.criar({ nome, tipo, saldoInicialCentavos: lerSaldo(saldoInicial) ?? 0, padrao: true });
+      await this.contas.criar({ nome, tipo, saldoInicialCentavos: lerSaldo(saldoInicial) ?? 0, padrao: true });
       this.etapa.set(2);
     } catch (e) {
       this.erro.set(e instanceof ErroRegra ? e.message : 'Não foi possível criar a conta.');

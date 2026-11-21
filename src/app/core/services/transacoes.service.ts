@@ -1,9 +1,12 @@
 import { Injectable, computed, inject } from '@angular/core';
 
+import { environment } from '../../../environments/environment';
 import { OrigemTransacao, TipoTransacao, Transacao } from '../models/financeiro.model';
 import { BancoLocalService } from './banco-local.service';
 import { CategoriasService } from './categorias.service';
+import { ContasService } from './contas.service';
 import { ErroRegra } from './erro-regra';
+import { FinanceiroApiService } from './financeiro-api.service';
 
 export interface DadosTransacao {
   tipo: TipoTransacao;
@@ -35,6 +38,8 @@ export function ordenarTransacoes(a: Transacao, b: Transacao): number {
 export class TransacoesService {
   private readonly banco = inject(BancoLocalService);
   private readonly categorias = inject(CategoriasService);
+  private readonly contas = inject(ContasService);
+  private readonly api = inject(FinanceiroApiService);
 
   readonly validas = computed(() =>
     this.banco
@@ -63,7 +68,15 @@ export class TransacoesService {
     });
   }
 
-  criar(dados: DadosTransacao): Transacao {
+  async criar(dados: DadosTransacao): Promise<Transacao> {
+    if (!environment.dadosLocais) {
+      this.validar(dados);
+      const criada = await this.api.criarTransacao(dados);
+      await this.sincronizar();
+      await this.contas.sincronizarContas();
+      return criada;
+    }
+
     const agora = new Date().toISOString();
     const transacao: Transacao = {
       id: this.banco.novoId(),
@@ -76,11 +89,20 @@ export class TransacoesService {
     return transacao;
   }
 
-  editar(id: string, dados: Omit<DadosTransacao, 'origem'>): void {
+  async editar(id: string, dados: Omit<DadosTransacao, 'origem'>): Promise<void> {
     const atual = this.porId(id);
     if (!atual) {
       throw new ErroRegra('Esta transação não existe mais.');
     }
+
+    if (!environment.dadosLocais) {
+      this.validar({ ...dados, origem: atual.origem }, atual.contaId);
+      await this.api.editarTransacao(id, dados);
+      await this.sincronizar();
+      await this.contas.sincronizarContas();
+      return;
+    }
+
     const validos = this.validar({ ...dados, origem: atual.origem }, atual.contaId);
     this.banco.atualizar((banco) => ({
       ...banco,
@@ -90,13 +112,24 @@ export class TransacoesService {
     }));
   }
 
-  excluir(id: string): void {
+  async excluir(id: string): Promise<void> {
+    if (!environment.dadosLocais) {
+      await this.api.excluirTransacao(id);
+      await this.sincronizar();
+      await this.contas.sincronizarContas();
+      return;
+    }
     this.banco.atualizar((banco) => ({
       ...banco,
       transacoes: banco.transacoes.map((t) =>
         t.id === id ? { ...t, excluidaEm: new Date().toISOString() } : t,
       ),
     }));
+  }
+
+  async sincronizar(): Promise<void> {
+    const transacoes = await this.api.listarTransacoes();
+    this.banco.atualizar((banco) => ({ ...banco, transacoes }));
   }
 
   /** A conta atual de uma transação editada continua válida mesmo se já estiver inativa. */

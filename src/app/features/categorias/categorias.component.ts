@@ -41,7 +41,7 @@ export class CategoriasComponent {
   async adicionar(): Promise<void> {
     this.erro.set('');
     try {
-      const categoria = this.categorias.criar(this.tipoNovo(), this.nomeNovo());
+      const categoria = await this.categorias.criar(this.tipoNovo(), this.nomeNovo());
       this.nomeNovo.set('');
       const toast = await this.toast.create({
         message: `Categoria "${categoria.nome}" criada.`,
