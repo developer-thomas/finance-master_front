@@ -1,0 +1,22 @@
+ion-content,
+ion-toolbar {
+  --background: #ffffff;
+}
+
+.chip {
+  border: 1px solid #dfe6ee;
+  background: #ffffff;
+  color: #334155;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+
+  &.ativo {
+    background: #1b7a6d;
+    border-color: #1b7a6d;
+    color: #ffffff;
+  }
+}

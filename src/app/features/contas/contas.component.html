@@ -1,0 +1,97 @@
+<ion-content>
+  <div class="fm-container fm-pagina contas">
+    <header class="mb-5 flex items-center justify-between gap-3 pt-2">
+      <div>
+        <h1 class="m-0 text-xl font-semibold text-slate-900 md:text-2xl">Contas</h1>
+        <p class="m-0 mt-0.5 text-sm text-slate-500">Onde o seu dinheiro está.</p>
+      </div>
+      <ion-button (click)="abrirFormulario()">
+        <ion-icon slot="start" name="add"></ion-icon>
+        Nova conta
+      </ion-button>
+    </header>
+
+    <section class="fm-cartao mb-4 flex items-center justify-between px-5 py-4">
+      <div>
+        <p class="m-0 text-sm font-medium text-slate-700">Saldo total</p>
+        <p class="m-0 text-xs text-slate-500">Soma das contas ativas, até hoje</p>
+      </div>
+      <p class="fm-numero m-0 text-xl font-bold" [class.text-despesa-600]="saldoTotal() < 0" [class.text-slate-900]="saldoTotal() >= 0">
+        {{ saldoTotal() | brl }}
+      </p>
+    </section>
+
+    @if (ativas().length) {
+      <ul class="fm-cartao m-0 list-none divide-y divide-slate-100 p-0" aria-label="Contas ativas">
+        @for (c of ativas(); track c.id) {
+          <li>
+            <button type="button" class="linha flex w-full items-center gap-3 px-4 py-3.5 text-left" (click)="abrirAcoes(c)">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-marca-50 text-marca-600">
+                <ion-icon [name]="icone(c.tipo)" aria-hidden="true"></ion-icon>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="flex items-center gap-2">
+                  <span class="truncate text-[0.95rem] font-medium text-slate-900">{{ c.nome }}</span>
+                  @if (c.padrao) {
+                    <span class="shrink-0 rounded-full bg-marca-600 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-white">Padrão</span>
+                  }
+                </span>
+                <span class="block text-xs text-slate-500">
+                  {{ rotuloTipo(c.tipo) }} · saldo inicial {{ c.saldoInicialCentavos | brl }}
+                </span>
+              </span>
+              <span class="fm-numero shrink-0 text-[0.95rem] font-semibold" [class.text-despesa-600]="c.saldoCentavos < 0" [class.text-slate-900]="c.saldoCentavos >= 0">
+                {{ c.saldoCentavos | brl }}
+              </span>
+              <ion-icon class="shrink-0 text-slate-300" name="ellipsis-vertical" aria-hidden="true"></ion-icon>
+            </button>
+          </li>
+        }
+      </ul>
+    } @else {
+      <div class="fm-cartao">
+        <app-estado-vazio
+          icone="wallet-outline"
+          titulo="Nenhuma conta ativa"
+          texto="Sem conta ativa nada é lançado, nem pelo app nem pelo WhatsApp. Crie uma conta ou reative uma das inativas."
+        >
+          <ion-button expand="block" (click)="abrirFormulario()">Criar conta</ion-button>
+        </app-estado-vazio>
+      </div>
+    }
+
+    @if (inativas().length) {
+      <section class="mt-6">
+        <button
+          type="button"
+          class="alternar flex w-full items-center justify-between px-1 py-2 text-sm font-semibold text-slate-600"
+          [attr.aria-expanded]="verInativas()"
+          (click)="verInativas.set(!verInativas())"
+        >
+          Inativas ({{ inativas().length }})
+          <ion-icon [name]="verInativas() ? 'chevron-up' : 'chevron-down'" aria-hidden="true"></ion-icon>
+        </button>
+        @if (verInativas()) {
+          <p class="m-0 mb-2 px-1 text-xs text-slate-500">Fora do saldo total e dos novos lançamentos. O histórico continua no extrato.</p>
+          <ul class="fm-cartao m-0 list-none divide-y divide-slate-100 p-0" aria-label="Contas inativas">
+            @for (c of inativas(); track c.id) {
+              <li>
+                <button type="button" class="linha flex w-full items-center gap-3 px-4 py-3.5 text-left opacity-70" (click)="abrirAcoes(c)">
+                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+                    <ion-icon [name]="icone(c.tipo)" aria-hidden="true"></ion-icon>
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate text-[0.95rem] font-medium text-slate-700">{{ c.nome }}</span>
+                    <span class="block text-xs text-slate-500">{{ rotuloTipo(c.tipo) }} · inativa</span>
+                  </span>
+                  <span class="fm-numero shrink-0 text-sm font-medium text-slate-500">{{ c.saldoCentavos | brl }}</span>
+                  <ion-icon class="shrink-0 text-slate-300" name="ellipsis-vertical" aria-hidden="true"></ion-icon>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+  </div>
+</ion-content>

@@ -1,0 +1,27 @@
+:host {
+  display: block;
+}
+
+.tipo {
+  background: #ffffff;
+  border-color: #dfe6ee;
+  color: #334155;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, background-color 0.15s;
+
+  ion-icon {
+    font-size: 1.1rem;
+    color: #64748b;
+  }
+
+  &.ativo {
+    background: #effaf8;
+    border-color: #1b7a6d;
+    color: #17423d;
+
+    ion-icon {
+      color: #1b7a6d;
+    }
+  }
+}

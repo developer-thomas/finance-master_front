@@ -1,0 +1,46 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="medium" aria-label="Fechar" (click)="fechar()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ conta ? 'Editar conta' : 'Nova conta' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form (ngSubmit)="salvar()" novalidate>
+    <app-conta-campos [form]="form" [saldoBloqueado]="saldoBloqueado"></app-conta-campos>
+
+    @if (podeSerPadrao) {
+      <div class="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+        <div>
+          <p class="m-0 text-sm font-medium text-slate-900">Conta padrão</p>
+          <p class="m-0 text-xs text-slate-500">Vem marcada no formulário e é usada pelo WhatsApp.</p>
+        </div>
+        <ion-toggle
+          aria-label="Usar como conta padrão"
+          [checked]="padrao()"
+          [disabled]="!!conta?.padrao"
+          (ionChange)="padrao.set($any($event).detail.checked)"
+        ></ion-toggle>
+      </div>
+      @if (conta?.padrao) {
+        <p class="m-0 mt-1.5 text-xs text-slate-500">Para trocar a padrão, marque outra conta como padrão.</p>
+      }
+    }
+
+    @if (erro()) {
+      <p class="m-0 mt-4 text-sm font-medium text-despesa-600" role="alert">{{ erro() }}</p>
+    }
+
+    <button type="submit" class="hidden" aria-hidden="true" tabindex="-1"></button>
+  </form>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar class="px-3 pb-2">
+    <ion-button expand="block" (click)="salvar()">{{ conta ? 'Salvar alterações' : 'Criar conta' }}</ion-button>
+  </ion-toolbar>
+</ion-footer>

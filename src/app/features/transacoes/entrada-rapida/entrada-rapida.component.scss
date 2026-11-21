@@ -1,0 +1,50 @@
+:host {
+  display: block;
+}
+
+.entrada {
+  background: #effaf8;
+  border: 1px solid #d7f2ec;
+  transition: box-shadow 0.2s;
+
+  &.destaque {
+    box-shadow: 0 0 0 3px rgba(27, 122, 109, 0.18);
+  }
+}
+
+.campo {
+  --background: #ffffff;
+  --border-radius: 1rem;
+  --padding-start: 0.875rem;
+  --padding-end: 0.875rem;
+  --padding-top: 0.75rem;
+  --padding-bottom: 0.75rem;
+  min-height: 3rem;
+  border-radius: 1rem;
+  border: 1px solid #d7f2ec;
+  margin: 0;
+}
+
+.botao-acao {
+  background: #ffffff;
+  border: 1px solid #d7f2ec;
+  color: #1b7a6d;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 1.35rem;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+ion-icon {
+  font-size: 1.05rem;
+}
+
+ion-spinner {
+  width: 1.5rem;
+  height: 1rem;
+}

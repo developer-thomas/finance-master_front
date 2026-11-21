@@ -1,0 +1,52 @@
+<ion-header class="ion-no-border md:hidden">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="dark" aria-label="Voltar" (click)="voltar()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Perfil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="fm-container fm-pagina perfil pt-2">
+    <header class="mb-5 hidden pt-2 md:block">
+      <h1 class="m-0 text-2xl font-semibold text-slate-900">Perfil</h1>
+    </header>
+
+    <section class="fm-cartao flex items-center gap-4 p-5">
+      <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-marca-100 text-lg font-semibold text-marca-700">
+        {{ iniciais() }}
+      </span>
+      <div class="min-w-0">
+        <p class="m-0 truncate text-base font-semibold text-slate-900">{{ usuario()?.nome }}</p>
+        <p class="m-0 truncate text-sm text-slate-500">{{ usuario()?.email }}</p>
+      </div>
+    </section>
+
+    <section class="fm-cartao mt-4 p-5" aria-labelledby="titulo-whatsapp">
+      <div class="mb-4 flex items-start gap-3">
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-receita-50 text-receita-600">
+          <ion-icon name="logo-whatsapp" aria-hidden="true"></ion-icon>
+        </span>
+        <div>
+          <h2 id="titulo-whatsapp" class="m-0 text-base font-semibold text-slate-900">WhatsApp</h2>
+          <p class="m-0 mt-0.5 text-sm leading-relaxed text-slate-500">
+            Registre por mensagem ou foto e consulte saldo e gastos do mês. Um número por conta.
+          </p>
+        </div>
+      </div>
+      <app-vinculo-whatsapp></app-vinculo-whatsapp>
+    </section>
+
+    <ion-button class="mt-6" expand="block" fill="outline" color="danger" (click)="sair()">
+      <ion-icon slot="start" name="log-out-outline"></ion-icon>
+      Sair da conta
+    </ion-button>
+
+    @if (modoLocal) {
+      <p class="m-0 mt-4 text-center text-xs text-slate-400">Modo local: os dados ficam salvos neste navegador.</p>
+    }
+  </div>
+</ion-content>

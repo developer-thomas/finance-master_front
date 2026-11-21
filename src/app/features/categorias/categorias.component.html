@@ -1,0 +1,76 @@
+<ion-header class="ion-no-border md:hidden">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="dark" aria-label="Voltar" (click)="voltar()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Categorias</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="fm-container fm-pagina pt-2">
+    <header class="mb-5 hidden pt-2 md:block">
+      <h1 class="m-0 text-2xl font-semibold text-slate-900">Categorias</h1>
+    </header>
+
+    <section class="fm-cartao mb-5 p-4" aria-labelledby="titulo-nova">
+      <h2 id="titulo-nova" class="m-0 text-sm font-semibold text-slate-900">Nova categoria</h2>
+      <p class="m-0 mt-0.5 text-xs text-slate-500">Uma categoria é só de despesa ou só de receita.</p>
+
+      <div class="mt-3 flex flex-col gap-3 md:flex-row md:items-start">
+        <ion-segment class="md:w-56" [value]="tipoNovo()" (ionChange)="tipoNovo.set($any($event).detail.value)">
+          <ion-segment-button value="DESPESA"><ion-label>Despesa</ion-label></ion-segment-button>
+          <ion-segment-button value="RECEITA"><ion-label>Receita</ion-label></ion-segment-button>
+        </ion-segment>
+        <ion-input
+          class="fm-input md:flex-1"
+          fill="outline"
+          aria-label="Nome da categoria"
+          placeholder="Ex.: Pets, Presentes, Aluguel recebido"
+          [maxlength]="40"
+          [value]="nomeNovo()"
+          (ionInput)="nomeNovo.set($any($event).detail.value ?? ''); erro.set('')"
+          (keyup.enter)="adicionar()"
+        ></ion-input>
+        <ion-button class="md:mt-0" [disabled]="!nomeNovo().trim()" (click)="adicionar()">Adicionar</ion-button>
+      </div>
+      @if (erro()) {
+        <p class="m-0 mt-2 text-sm text-despesa-600" role="alert">{{ erro() }}</p>
+      }
+    </section>
+
+    <div class="grid gap-5 md:grid-cols-2">
+      @for (g of grupos(); track g.tipo) {
+        <section [attr.aria-label]="'Categorias de ' + g.titulo.toLowerCase()">
+          <h2 class="fm-rotulo m-0 mb-2 px-1">{{ g.titulo }}</h2>
+          <ul class="fm-cartao m-0 list-none divide-y divide-slate-100 p-0">
+            @for (c of g.categorias; track c.id) {
+              <li class="flex items-center gap-3 px-4 py-3">
+                <span
+                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                  [class.bg-despesa-50]="g.tipo === 'DESPESA'"
+                  [class.text-despesa-600]="g.tipo === 'DESPESA'"
+                  [class.bg-receita-50]="g.tipo === 'RECEITA'"
+                  [class.text-receita-600]="g.tipo === 'RECEITA'"
+                >
+                  <ion-icon [name]="icone(c)" aria-hidden="true"></ion-icon>
+                </span>
+                <span class="flex-1 text-sm font-medium text-slate-800">{{ c.nome }}</span>
+                @if (c.escopo === 'PADRAO') {
+                  <span class="flex items-center gap-1 text-xs text-slate-400">
+                    <ion-icon name="lock-closed-outline" aria-hidden="true"></ion-icon>
+                    Fixa
+                  </span>
+                } @else {
+                  <span class="rounded-full bg-marca-50 px-2 py-0.5 text-xs font-medium text-marca-700">Sua</span>
+                }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+  </div>
+</ion-content>

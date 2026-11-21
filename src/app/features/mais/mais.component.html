@@ -1,0 +1,30 @@
+<ion-content>
+  <div class="fm-container fm-pagina mais">
+    <header class="mb-5 pt-2">
+      <h1 class="m-0 text-xl font-semibold text-slate-900 md:text-2xl">Mais</h1>
+    </header>
+
+    <nav class="fm-cartao divide-y divide-slate-100" aria-label="Mais opções">
+      <a class="linha flex items-center gap-3 px-4 py-4 no-underline" routerLink="/app/categorias">
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-marca-50 text-marca-600">
+          <ion-icon name="pricetags-outline" aria-hidden="true"></ion-icon>
+        </span>
+        <span class="flex-1">
+          <span class="block text-[0.95rem] font-medium text-slate-900">Categorias</span>
+          <span class="block text-xs text-slate-500">Veja as fixas e crie as suas</span>
+        </span>
+        <ion-icon class="text-slate-300" name="chevron-forward" aria-hidden="true"></ion-icon>
+      </a>
+      <a class="linha flex items-center gap-3 px-4 py-4 no-underline" routerLink="/app/perfil">
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-marca-50 text-marca-600">
+          <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+        </span>
+        <span class="min-w-0 flex-1">
+          <span class="block truncate text-[0.95rem] font-medium text-slate-900">Perfil</span>
+          <span class="block truncate text-xs text-slate-500">{{ usuario()?.email }} · {{ whatsappResumo() }}</span>
+        </span>
+        <ion-icon class="text-slate-300" name="chevron-forward" aria-hidden="true"></ion-icon>
+      </a>
+    </nav>
+  </div>
+</ion-content>

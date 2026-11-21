@@ -1,0 +1,30 @@
+.contas {
+  max-width: 48rem;
+}
+
+.linha,
+.alternar {
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.linha:hover {
+  background: #f8fafc;
+}
+
+li:first-child .linha {
+  border-radius: 1.25rem 1.25rem 0 0;
+}
+
+li:last-child .linha {
+  border-radius: 0 0 1.25rem 1.25rem;
+}
+
+li:only-child .linha {
+  border-radius: 1.25rem;
+}
+
+ion-icon {
+  font-size: 1.15rem;
+}

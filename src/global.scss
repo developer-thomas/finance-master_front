@@ -1,0 +1,156 @@
+@import "@ionic/angular/css/core.css";
+
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  font-family: var(--ion-font-family);
+  -webkit-font-smoothing: antialiased;
+}
+
+// Parte do preflight do Tailwind que as classes `border-*` precisam para funcionar.
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: #e2e8f0;
+}
+
+.fm-numero {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.fm-container {
+  width: 100%;
+  max-width: 64rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.fm-cartao {
+  background: #ffffff;
+  border: 1px solid #e8edf2;
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 16px rgba(15, 23, 42, 0.05);
+}
+
+.fm-rotulo {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+ion-content {
+  --background: var(--ion-background-color);
+}
+
+ion-toolbar {
+  --background: var(--ion-background-color);
+  --border-width: 0;
+}
+
+ion-header.fm-header::after {
+  display: none;
+}
+
+ion-item.fm-campo {
+  --background: #ffffff;
+  --border-color: #dfe6ee;
+  --border-radius: 0.875rem;
+  --border-width: 1px;
+  --border-style: solid;
+  --padding-start: 0.875rem;
+  --inner-padding-end: 0.875rem;
+  --min-height: 3.25rem;
+  border-radius: 0.875rem;
+}
+
+ion-button {
+  --border-radius: 0.875rem;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+ion-segment {
+  --background: #eef2f6;
+  border-radius: 0.875rem;
+}
+
+ion-segment-button {
+  --indicator-color: #ffffff;
+  --border-radius: 0.7rem;
+  --color-checked: #0f172a;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  min-height: 2.5rem;
+}
+
+ion-input.fm-input,
+ion-textarea.fm-input,
+ion-select.fm-input {
+  --border-radius: 0.875rem;
+  --border-color: #dfe6ee;
+  --background: #ffffff;
+  --highlight-color-focused: var(--ion-color-primary);
+}
+
+ion-searchbar.fm-busca {
+  --border-radius: 0.875rem;
+  --background: #ffffff;
+  --box-shadow: 0 0 0 1px #e2e8f0;
+  padding: 0;
+}
+
+ion-list.fm-lista {
+  background: transparent;
+  padding: 0;
+}
+
+ion-item.fm-linha {
+  --background: transparent;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --border-color: #eef2f6;
+  --min-height: 3.75rem;
+}
+
+ion-modal.fm-modal {
+  --border-radius: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  ion-modal.fm-modal {
+    --width: 32rem;
+    --height: min(44rem, 90vh);
+  }
+}
+
+.fm-pagina {
+  padding: 1rem 1rem 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .fm-pagina {
+    padding: 2rem 2rem 3rem;
+  }
+}

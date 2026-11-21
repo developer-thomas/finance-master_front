@@ -1,0 +1,41 @@
+@let t = transacao();
+<a
+  class="item flex items-center gap-3 rounded-2xl px-2 py-2.5 no-underline transition-colors hover:bg-slate-50"
+  [routerLink]="['/app/transacoes', t.id]"
+>
+  <span
+    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+    [class.bg-despesa-50]="t.tipo === 'DESPESA'"
+    [class.text-despesa-600]="t.tipo === 'DESPESA'"
+    [class.bg-receita-50]="t.tipo === 'RECEITA'"
+    [class.text-receita-600]="t.tipo === 'RECEITA'"
+  >
+    <ion-icon [name]="icone()" aria-hidden="true"></ion-icon>
+  </span>
+
+  <span class="min-w-0 flex-1">
+    <span class="block truncate text-[0.95rem] font-medium text-slate-900">{{ t.descricao }}</span>
+    <span class="block truncate text-xs text-slate-500">
+      {{ categoria()?.nome }}
+      @if (mostrarData()) {
+        · {{ t.data | dataCivil: 'dia' }}
+      }
+      @if (conta(); as c) {
+        · {{ c.nome }}
+      }
+    </span>
+  </span>
+
+  <span class="flex shrink-0 flex-col items-end">
+    <span
+      class="fm-numero text-[0.95rem] font-semibold"
+      [class.text-despesa-600]="t.tipo === 'DESPESA'"
+      [class.text-receita-600]="t.tipo === 'RECEITA'"
+    >
+      {{ t.valorCentavos | brl: t.tipo }}
+    </span>
+    @if (futura()) {
+      <span class="mt-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-[0.65rem] font-semibold text-amber-700">Agendada</span>
+    }
+  </span>
+</a>

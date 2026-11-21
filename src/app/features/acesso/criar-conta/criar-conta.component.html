@@ -1,0 +1,69 @@
+<app-moldura-acesso titulo="Criar conta" subtitulo="Leva menos de um minuto.">
+  <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="criar()" novalidate>
+    <ion-input
+      class="fm-input"
+      fill="outline"
+      label="Nome"
+      labelPlacement="stacked"
+      autocomplete="name"
+      autocapitalize="words"
+      formControlName="nome"
+      errorText="Informe seu nome."
+    ></ion-input>
+
+    <ion-input
+      class="fm-input"
+      fill="outline"
+      label="E-mail"
+      labelPlacement="stacked"
+      type="email"
+      inputmode="email"
+      autocomplete="email"
+      formControlName="email"
+      errorText="Informe um e-mail válido."
+    ></ion-input>
+
+    <ion-input
+      class="fm-input"
+      fill="outline"
+      label="Senha"
+      labelPlacement="stacked"
+      [type]="verSenha() ? 'text' : 'password'"
+      autocomplete="new-password"
+      formControlName="senha"
+      [helperText]="'Mínimo de ' + senhaMinima + ' caracteres.'"
+      [errorText]="'A senha precisa ter pelo menos ' + senhaMinima + ' caracteres.'"
+    >
+      <ion-button
+        slot="end"
+        fill="clear"
+        color="medium"
+        type="button"
+        [attr.aria-label]="verSenha() ? 'Esconder senha' : 'Mostrar senha'"
+        (click)="verSenha.set(!verSenha())"
+      >
+        <ion-icon slot="icon-only" [name]="verSenha() ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+      </ion-button>
+    </ion-input>
+
+    @if (erro()) {
+      <div class="flex items-start gap-2 rounded-xl bg-despesa-50 px-3 py-2.5 text-sm text-despesa-700" role="alert">
+        <ion-icon class="mt-0.5 shrink-0" name="alert-circle-outline" aria-hidden="true"></ion-icon>
+        <span>{{ erro() }}</span>
+      </div>
+    }
+
+    <ion-button class="mt-2" expand="block" type="submit" [disabled]="enviando()">
+      @if (enviando()) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        Criar conta
+      }
+    </ion-button>
+  </form>
+
+  <p class="m-0 mt-8 text-center text-sm text-slate-500">
+    Já tem conta?
+    <a class="font-semibold text-marca-700 no-underline" routerLink="/entrar">Entrar</a>
+  </p>
+</app-moldura-acesso>

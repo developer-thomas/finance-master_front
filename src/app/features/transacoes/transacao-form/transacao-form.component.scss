@@ -1,0 +1,82 @@
+.tipo button {
+  background: transparent;
+  color: #64748b;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.45;
+  }
+
+  &.despesa-ativa {
+    background: #ffffff;
+    color: #c8344a;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+  }
+
+  &.receita-ativa {
+    background: #ffffff;
+    color: #0f8a4f;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+  }
+}
+
+.valor {
+  background: #f8fafc;
+  border: 1px solid #dfe6ee;
+  cursor: text;
+
+  &:focus-within {
+    border-color: #1b7a6d;
+    box-shadow: 0 0 0 3px rgba(27, 122, 109, 0.12);
+  }
+
+  &.invalido {
+    border-color: #c8344a;
+  }
+
+  input {
+    border: 0;
+    font-family: inherit;
+    min-width: 0;
+  }
+}
+
+.chip {
+  border: 1px solid #dfe6ee;
+  background: #ffffff;
+  color: #334155;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+
+  ion-icon {
+    font-size: 1rem;
+    color: #64748b;
+  }
+
+  &.pequeno {
+    padding: 0.3rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  &.ativo {
+    background: #1b7a6d;
+    border-color: #1b7a6d;
+    color: #ffffff;
+
+    ion-icon {
+      color: #ffffff;
+    }
+  }
+}
+
+ion-icon {
+  font-size: 1.05rem;
+}

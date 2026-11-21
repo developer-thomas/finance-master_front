@@ -1,0 +1,51 @@
+<div class="flex flex-col gap-5" [formGroup]="form()">
+  <ion-input
+    class="fm-input"
+    fill="outline"
+    label="Nome da conta"
+    labelPlacement="stacked"
+    placeholder="Ex.: Nubank, Itaú, Carteira"
+    formControlName="nome"
+    autocapitalize="sentences"
+    errorText="Dê um nome com até 40 caracteres."
+  ></ion-input>
+
+  <fieldset class="m-0 border-0 p-0">
+    <legend class="fm-rotulo mb-2 p-0">Tipo</legend>
+    <div class="grid grid-cols-2 gap-2">
+      @for (opcao of tipos; track opcao.tipo) {
+        <button
+          type="button"
+          class="tipo flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm font-medium"
+          [class.ativo]="form().controls.tipo.value === opcao.tipo"
+          [attr.aria-pressed]="form().controls.tipo.value === opcao.tipo"
+          (click)="form().controls.tipo.setValue(opcao.tipo)"
+        >
+          <ion-icon [name]="opcao.icone" aria-hidden="true"></ion-icon>
+          {{ opcao.rotulo }}
+        </button>
+      }
+    </div>
+  </fieldset>
+
+  <div>
+    <ion-input
+      class="fm-input"
+      fill="outline"
+      label="Saldo inicial"
+      labelPlacement="stacked"
+      inputmode="decimal"
+      placeholder="0,00"
+      formControlName="saldoInicial"
+      [readonly]="saldoBloqueado()"
+      errorText="Use só números, como 1.250,00."
+      [helperText]="
+        saldoBloqueado()
+          ? 'A conta já tem lançamentos. Para corrigir o saldo, ajuste ou exclua os lançamentos.'
+          : 'Quanto havia na conta no dia em que você começou a controlar por aqui.'
+      "
+    >
+      <span slot="start" class="text-sm font-medium text-slate-500">R$</span>
+    </ion-input>
+  </div>
+</div>

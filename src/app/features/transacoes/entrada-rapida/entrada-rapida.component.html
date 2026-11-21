@@ -1,0 +1,62 @@
+<section class="entrada rounded-3xl p-4" [class.destaque]="destacar()" aria-labelledby="titulo-entrada">
+  <div class="flex items-center gap-2">
+    <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-marca-600">
+      <ion-icon name="sparkles-outline" aria-hidden="true"></ion-icon>
+    </span>
+    <div>
+      <h2 id="titulo-entrada" class="m-0 text-sm font-semibold text-slate-900">Entrada rápida</h2>
+      <p class="m-0 text-xs text-slate-500">Escreva ou envie uma foto. A gente preenche, você confere e salva.</p>
+    </div>
+  </div>
+
+  <div class="mt-3 flex items-end gap-2">
+    <ion-textarea
+      class="campo flex-1"
+      [autoGrow]="true"
+      rows="1"
+      placeholder="gastei 49,90 no almoço hoje"
+      aria-label="Descreva a transação"
+      [value]="texto()"
+      [disabled]="estado().tipo === 'lendo'"
+      (ionInput)="texto.set($any($event).detail.value ?? '')"
+      (keydown.enter)="$event.preventDefault(); lerTexto()"
+    ></ion-textarea>
+    <button
+      type="button"
+      class="botao-acao flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+      aria-label="Enviar foto de nota ou comprovante"
+      [disabled]="estado().tipo === 'lendo'"
+      (click)="escolherFoto()"
+    >
+      <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+    </button>
+  </div>
+  <input #arquivo class="hidden" type="file" accept="image/*" capture="environment" (change)="fotoEscolhida($event)" />
+
+  <ion-button
+    class="mt-3"
+    expand="block"
+    [disabled]="!texto().trim() || estado().tipo === 'lendo'"
+    (click)="lerTexto()"
+  >
+    Preencher formulário
+  </ion-button>
+
+  @switch (estado().tipo) {
+    @case ('lendo') {
+      <div class="mt-3 flex items-center gap-2 rounded-2xl bg-white px-3 py-2.5 text-sm text-slate-600" role="status">
+        <ion-spinner name="dots" color="primary"></ion-spinner>
+        {{ $any(estado()).origem === 'foto' ? 'Lendo a imagem…' : 'Lendo o texto…' }}
+      </div>
+    }
+    @case ('falhou') {
+      <div class="mt-3 flex items-start gap-2 rounded-2xl bg-amber-50 px-3 py-2.5 text-sm text-amber-900" role="alert">
+        <ion-icon class="mt-0.5 shrink-0" name="alert-circle-outline" aria-hidden="true"></ion-icon>
+        <span>
+          <strong class="block font-semibold">Não deu para preencher</strong>
+          {{ $any(estado()).motivo }}
+        </span>
+      </div>
+    }
+  }
+</section>

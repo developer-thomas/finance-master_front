@@ -1,0 +1,20 @@
+ion-toolbar {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0.5rem;
+}
+
+.botao-filtro {
+  box-shadow: 0 0 0 1px #e2e8f0;
+  color: #334155;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 1.3rem;
+  }
+}
+
+.fm-container {
+  max-width: 48rem;
+}

@@ -1,0 +1,17 @@
+:host {
+  display: contents;
+}
+
+ion-content {
+  --background: #ffffff;
+}
+
+.painel {
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.12), transparent 45%),
+    linear-gradient(160deg, #1b7a6d 0%, #17423d 100%);
+}
+
+ion-icon {
+  font-size: 1.15rem;
+}

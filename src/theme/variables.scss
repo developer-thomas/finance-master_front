@@ -1,0 +1,47 @@
+:root {
+  --ion-font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --ion-background-color: #f5f7fa;
+  --ion-background-color-rgb: 245, 247, 250;
+  --ion-text-color: #0f172a;
+  --ion-text-color-rgb: 15, 23, 42;
+
+  --ion-color-primary: #1b7a6d;
+  --ion-color-primary-rgb: 27, 122, 109;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #186b60;
+  --ion-color-primary-tint: #32877c;
+
+  --ion-color-success: #0f8a4f;
+  --ion-color-success-rgb: 15, 138, 79;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #0d7946;
+  --ion-color-success-tint: #279661;
+
+  --ion-color-danger: #c8344a;
+  --ion-color-danger-rgb: 200, 52, 74;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #b02e41;
+  --ion-color-danger-tint: #ce485c;
+
+  --ion-color-medium: #64748b;
+  --ion-color-medium-rgb: 100, 116, 139;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #586679;
+  --ion-color-medium-tint: #748297;
+
+  --ion-color-light: #eef2f6;
+  --ion-color-light-rgb: 238, 242, 246;
+  --ion-color-light-contrast: #0f172a;
+  --ion-color-light-contrast-rgb: 15, 23, 42;
+  --ion-color-light-shade: #d1d5d8;
+  --ion-color-light-tint: #f0f3f7;
+
+  --ion-border-color: #e8edf2;
+  --ion-item-background: #ffffff;
+  --ion-toolbar-background: #f5f7fa;
+}

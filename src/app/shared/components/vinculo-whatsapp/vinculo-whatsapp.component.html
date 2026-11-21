@@ -1,0 +1,70 @@
+@if (pendente(); as codigo) {
+  <div class="rounded-2xl border border-marca-100 bg-marca-50 p-4">
+    <p class="m-0 text-sm text-slate-600">Envie uma mensagem no WhatsApp, a partir do número</p>
+    <p class="m-0 mt-0.5 text-sm font-semibold text-slate-900">{{ numeroPendente() }}</p>
+    <p class="m-0 mt-1 text-sm text-slate-600">para o Finance Master, contendo este código:</p>
+
+    <div class="fm-numero my-4 text-center text-4xl font-bold tracking-[0.35em] text-marca-700" aria-label="Código de vinculação">
+      {{ codigo.codigo }}
+    </div>
+
+    @if (expirou()) {
+      <p class="m-0 text-center text-sm font-medium text-despesa-600">O código expirou. Gere um novo.</p>
+    } @else {
+      <p class="m-0 text-center text-xs text-slate-500">
+        Válido por <span class="fm-numero font-semibold text-slate-700">{{ restante() }}</span>. Use uma única vez.
+      </p>
+    }
+
+    <div class="mt-4 flex flex-col gap-2">
+      @if (modoLocal && !expirou()) {
+        <ion-button expand="block" (click)="simular()">
+          <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+          Simular mensagem recebida
+        </ion-button>
+      }
+      <ion-button expand="block" fill="clear" color="medium" (click)="cancelar()">Usar outro número</ion-button>
+    </div>
+    @if (modoLocal) {
+      <p class="m-0 mt-1 text-center text-[0.7rem] text-slate-400">Modo local: sem WhatsApp real, a confirmação é simulada.</p>
+    }
+  </div>
+} @else if (mostrarFormulario()) {
+  <div>
+    <ion-input
+      class="fm-input"
+      fill="outline"
+      label="Celular com DDD"
+      labelPlacement="stacked"
+      type="tel"
+      inputmode="tel"
+      placeholder="(11) 98765-4321"
+      [value]="numero()"
+      (ionInput)="numero.set($any($event).detail.value ?? '')"
+      (keyup.enter)="gerar()"
+    ></ion-input>
+    @if (erro()) {
+      <p class="m-0 mt-2 text-sm text-despesa-600" role="alert">{{ erro() }}</p>
+    }
+    <div class="mt-3 flex flex-col gap-2 sm:flex-row-reverse">
+      <ion-button class="sm:flex-1" expand="block" (click)="gerar()">Gerar código</ion-button>
+      @if (trocando()) {
+        <ion-button class="sm:flex-1" expand="block" fill="clear" color="medium" (click)="trocando.set(false)">Manter o atual</ion-button>
+      }
+    </div>
+    @if (trocando()) {
+      <p class="m-0 mt-2 text-xs text-slate-500">O número atual continua valendo até o novo ser confirmado.</p>
+    }
+  </div>
+} @else {
+  <div class="flex items-center gap-3">
+    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-receita-50 text-receita-600">
+      <ion-icon name="logo-whatsapp" aria-hidden="true"></ion-icon>
+    </span>
+    <div class="min-w-0 flex-1">
+      <p class="m-0 text-sm font-semibold text-slate-900">{{ numeroVinculado() }}</p>
+      <p class="m-0 text-xs text-slate-500">Vinculado. Mensagens desse número registram na sua conta padrão.</p>
+    </div>
+  </div>
+  <ion-button class="mt-3" expand="block" fill="outline" (click)="trocando.set(true)">Trocar número</ion-button>
+}

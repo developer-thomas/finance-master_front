@@ -1,0 +1,161 @@
+<ion-content>
+  <div class="fm-container fm-pagina">
+    <header class="mb-5 flex items-center justify-between gap-3 pt-2">
+      <div>
+        <p class="m-0 text-sm text-slate-500">Olá{{ primeiroNome() ? ', ' + primeiroNome() : '' }}</p>
+        <h1 class="m-0 text-xl font-semibold text-slate-900 md:text-2xl">Como estão suas finanças</h1>
+      </div>
+      <ion-button class="hidden md:block" fill="outline" routerLink="/app/transacoes/nova" [queryParams]="{ modo: 'texto' }">
+        <ion-icon slot="start" name="sparkles-outline"></ion-icon>
+        Texto ou foto
+      </ion-button>
+    </header>
+
+    <div class="grid gap-4 lg:grid-cols-5">
+      <!-- Saldo total -->
+      <section class="saldo rounded-3xl p-5 text-white lg:col-span-2" aria-labelledby="titulo-saldo">
+        <div class="flex items-center justify-between">
+          <p id="titulo-saldo" class="m-0 text-sm font-medium text-white/80">Saldo total</p>
+          <a class="flex items-center gap-1 text-xs font-medium text-white/80 no-underline" routerLink="/app/contas" routerDirection="root">
+            {{ quantidadeContas() }} {{ quantidadeContas() === 1 ? 'conta ativa' : 'contas ativas' }}
+            <ion-icon name="chevron-forward" aria-hidden="true"></ion-icon>
+          </a>
+        </div>
+        <p class="fm-numero m-0 mt-2 text-[2rem] font-bold leading-tight">{{ saldoTotal() | brl }}</p>
+        <p class="m-0 mt-3 text-xs leading-relaxed text-white/70">
+          Quanto você tem hoje: saldos iniciais mais tudo o que entrou e saiu até agora.
+        </p>
+      </section>
+
+      <!-- Resumo do mês -->
+      <section class="fm-cartao p-5 lg:col-span-3" aria-labelledby="titulo-mes">
+        <div class="flex items-baseline justify-between">
+          <h2 id="titulo-mes" class="m-0 text-base font-semibold capitalize text-slate-900">{{ nomeMes() }}</h2>
+          <span class="text-xs text-slate-500">só este mês</span>
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-3">
+          <div class="rounded-2xl bg-receita-50 p-3">
+            <p class="m-0 flex items-center gap-1 text-xs font-medium text-receita-700">
+              <ion-icon name="arrow-down-circle-outline" aria-hidden="true"></ion-icon> Receitas
+            </p>
+            <p class="fm-numero m-0 mt-1 text-lg font-semibold text-receita-700">{{ resumo().receitasCentavos | brl }}</p>
+          </div>
+          <div class="rounded-2xl bg-despesa-50 p-3">
+            <p class="m-0 flex items-center gap-1 text-xs font-medium text-despesa-700">
+              <ion-icon name="arrow-up-circle-outline" aria-hidden="true"></ion-icon> Despesas
+            </p>
+            <p class="fm-numero m-0 mt-1 text-lg font-semibold text-despesa-700">{{ resumo().despesasCentavos | brl }}</p>
+          </div>
+        </div>
+
+        <div class="mt-3 flex items-center justify-between rounded-2xl border border-solid border-slate-200 px-3 py-2.5">
+          <div>
+            <p class="m-0 text-sm font-medium text-slate-800">Resultado do mês</p>
+            <p class="m-0 text-xs text-slate-500">Receitas menos despesas de {{ nomeMes() }}</p>
+          </div>
+          <p
+            class="fm-numero m-0 text-lg font-semibold"
+            [class.text-receita-600]="resumo().resultadoCentavos > 0"
+            [class.text-despesa-600]="resumo().resultadoCentavos < 0"
+            [class.text-slate-700]="resumo().resultadoCentavos === 0"
+          >
+            {{ resumo().resultadoCentavos > 0 ? '+' : '' }}{{ resumo().resultadoCentavos | brl }}
+          </p>
+        </div>
+      </section>
+    </div>
+
+    @if (semContaAtiva()) {
+      <div class="mt-4 flex items-start gap-3 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800" role="status">
+        <ion-icon class="mt-0.5 shrink-0" name="alert-circle-outline" aria-hidden="true"></ion-icon>
+        <span>
+          Nenhuma conta ativa. Para lançar algo, crie ou reative uma conta em
+          <a class="font-semibold text-amber-900" routerLink="/app/contas" routerDirection="root">Contas</a>.
+        </span>
+      </div>
+    }
+
+    @if (vazio()) {
+      <section class="fm-cartao mt-4">
+        <app-estado-vazio
+          icone="receipt-outline"
+          titulo="Nenhuma movimentação ainda"
+          texto="Registre o primeiro gasto ou recebimento e o resumo começa a ganhar forma."
+        >
+          <ion-button expand="block" routerLink="/app/transacoes/nova">
+            <ion-icon slot="start" name="add"></ion-icon>
+            Adicionar a primeira
+          </ion-button>
+          <ion-button expand="block" fill="outline" routerLink="/app/transacoes/nova" [queryParams]="{ modo: 'texto' }">
+            <ion-icon slot="start" name="sparkles-outline"></ion-icon>
+            Escrever ou mandar foto
+          </ion-button>
+        </app-estado-vazio>
+        <div class="mx-5 mb-5 flex items-start gap-3 rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
+          <ion-icon class="mt-0.5 shrink-0 text-lg text-receita-600" name="logo-whatsapp" aria-hidden="true"></ion-icon>
+          @if (whatsappVinculado()) {
+            <span>Também dá para mandar pelo WhatsApp, por exemplo: <em>"gastei 45 no almoço"</em>.</span>
+          } @else {
+            <span>
+              Prefere registrar por mensagem?
+              <a class="font-semibold text-marca-700" routerLink="/app/perfil" routerDirection="root">Vincule seu WhatsApp</a>
+              e mande "gastei 45 no almoço".
+            </span>
+          }
+        </div>
+      </section>
+    } @else {
+      <div class="mt-4 grid gap-4 lg:grid-cols-5">
+        <!-- Gastos por categoria -->
+        <section class="fm-cartao p-5 lg:col-span-2" aria-labelledby="titulo-categorias">
+          <h2 id="titulo-categorias" class="m-0 text-base font-semibold text-slate-900">Gastos por categoria</h2>
+          <p class="m-0 mt-0.5 text-xs text-slate-500">Despesas de {{ nomeMes() }}</p>
+
+          @if (categorias().length) {
+            <ul class="m-0 mt-4 flex list-none flex-col gap-3.5 p-0">
+              @for (c of categorias(); track c.nome) {
+                <li>
+                  <div class="flex items-center gap-2 text-sm">
+                    <ion-icon class="shrink-0 text-slate-400" [name]="c.icone" aria-hidden="true"></ion-icon>
+                    <span class="min-w-0 flex-1 truncate font-medium text-slate-700">{{ c.nome }}</span>
+                    <span class="text-xs text-slate-400">{{ percentual(c.percentual) }}</span>
+                    <span class="fm-numero w-24 text-right font-semibold text-slate-900">{{ c.totalCentavos | brl }}</span>
+                  </div>
+                  <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                    <div class="h-full rounded-full bg-despesa-600/80" [style.width.%]="c.percentual * 100"></div>
+                  </div>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="m-0 mt-4 text-sm text-slate-500">Nenhuma despesa em {{ nomeMes() }} até hoje.</p>
+          }
+        </section>
+
+        <!-- Recentes -->
+        <section class="fm-cartao p-3 lg:col-span-3" aria-labelledby="titulo-recentes">
+          <div class="flex items-center justify-between px-2 pb-1 pt-2">
+            <h2 id="titulo-recentes" class="m-0 text-base font-semibold text-slate-900">Recentes</h2>
+            <a class="text-sm font-semibold text-marca-700 no-underline" routerLink="/app/extrato" routerDirection="root">Ver extrato</a>
+          </div>
+          @for (t of recentes(); track t.id) {
+            <app-item-transacao [transacao]="t" [mostrarData]="true"></app-item-transacao>
+          } @empty {
+            <p class="m-0 px-2 py-4 text-sm text-slate-500">Só há lançamentos com data futura.</p>
+          }
+          @if (futuras().length) {
+            <a
+              class="mx-2 mb-1 mt-2 flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 no-underline"
+              routerLink="/app/extrato"
+              routerDirection="root"
+            >
+              <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
+              {{ futuras().length }} {{ futuras().length === 1 ? 'lançamento agendado fica' : 'lançamentos agendados ficam' }} fora do saldo até a data.
+            </a>
+          }
+        </section>
+      </div>
+    }
+  </div>
+</ion-content>

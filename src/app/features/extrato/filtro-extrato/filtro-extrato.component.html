@@ -1,0 +1,102 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="medium" (click)="fechar()" aria-label="Fechar">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Filtros</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="limpar()">Limpar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <section class="mb-6">
+    <h3 class="fm-rotulo m-0 mb-2">Período</h3>
+    <div class="flex flex-wrap gap-2">
+      @for (p of periodos; track p.valor) {
+        <button type="button" class="chip" [class.ativo]="atual().periodo === p.valor" (click)="alterar({ periodo: p.valor })">
+          {{ p.rotulo }}
+        </button>
+      }
+    </div>
+    @if (atual().periodo === 'PERSONALIZADO') {
+      <div class="mt-3 grid grid-cols-2 gap-3">
+        <ion-input
+          class="fm-input"
+          fill="outline"
+          label="De"
+          labelPlacement="stacked"
+          type="date"
+          [value]="atual().de"
+          (ionChange)="alterar({ de: $any($event).detail.value ?? '' })"
+        ></ion-input>
+        <ion-input
+          class="fm-input"
+          fill="outline"
+          label="Até"
+          labelPlacement="stacked"
+          type="date"
+          [value]="atual().ate"
+          (ionChange)="alterar({ ate: $any($event).detail.value ?? '' })"
+        ></ion-input>
+      </div>
+      @if (datasInvalidas()) {
+        <p class="m-0 mt-2 text-sm text-despesa-600" role="alert">A data inicial precisa ser anterior à final.</p>
+      }
+    }
+  </section>
+
+  <section class="mb-6">
+    <h3 class="fm-rotulo m-0 mb-2">Tipo</h3>
+    <ion-segment [value]="atual().tipo ?? 'TODOS'" (ionChange)="alterar({ tipo: $any($event).detail.value === 'TODOS' ? null : $any($event).detail.value })">
+      @for (t of tipos; track t.rotulo) {
+        <ion-segment-button [value]="t.valor ?? 'TODOS'">
+          <ion-label>{{ t.rotulo }}</ion-label>
+        </ion-segment-button>
+      }
+    </ion-segment>
+  </section>
+
+  <section class="mb-6">
+    <ion-select
+      class="fm-input"
+      fill="outline"
+      label="Categoria"
+      labelPlacement="stacked"
+      interface="popover"
+      [value]="atual().categoriaId ?? ''"
+      (ionChange)="alterar({ categoriaId: $any($event).detail.value || null })"
+    >
+      <ion-select-option value="">Todas</ion-select-option>
+      @for (c of opcoesCategoria(); track c.id) {
+        <ion-select-option [value]="c.id">{{ c.rotulo }}</ion-select-option>
+      }
+    </ion-select>
+  </section>
+
+  <section>
+    <ion-select
+      class="fm-input"
+      fill="outline"
+      label="Conta"
+      labelPlacement="stacked"
+      interface="popover"
+      [value]="atual().contaId ?? ''"
+      (ionChange)="alterar({ contaId: $any($event).detail.value || null })"
+    >
+      <ion-select-option value="">Todas</ion-select-option>
+      @for (c of opcoesConta(); track c.id) {
+        <ion-select-option [value]="c.id">{{ c.rotulo }}</ion-select-option>
+      }
+    </ion-select>
+  </section>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar class="px-3 pb-2">
+    <ion-button expand="block" [disabled]="datasInvalidas()" (click)="aplicar()">Ver resultados</ion-button>
+  </ion-toolbar>
+</ion-footer>

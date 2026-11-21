@@ -1,0 +1,50 @@
+<ion-content>
+  <div class="mx-auto flex min-h-full w-full max-w-md flex-col px-6 pb-8 pt-10">
+    <div class="mb-8 flex items-center gap-2" aria-label="Etapa {{ etapa() }} de 2">
+      <span class="h-1.5 flex-1 rounded-full bg-marca-600"></span>
+      <span class="h-1.5 flex-1 rounded-full" [class.bg-marca-600]="etapa() === 2" [class.bg-slate-200]="etapa() === 1"></span>
+    </div>
+
+    @if (etapa() === 1) {
+      <p class="fm-rotulo m-0">Etapa 1 de 2</p>
+      <h1 class="m-0 mt-1 text-2xl font-semibold text-slate-900">
+        @if (primeiroNome()) { Olá, {{ primeiroNome() }}! }
+        Onde está o seu dinheiro?
+      </h1>
+      <p class="m-0 mt-2 text-sm leading-relaxed text-slate-500">
+        Crie a primeira conta. Ela será a conta padrão, usada também pelo WhatsApp. Dá para adicionar outras depois.
+      </p>
+
+      <form class="mt-7 flex flex-1 flex-col" (ngSubmit)="criarConta()" novalidate>
+        <app-conta-campos [form]="form"></app-conta-campos>
+
+        @if (erro()) {
+          <p class="m-0 mt-4 text-sm text-despesa-600" role="alert">{{ erro() }}</p>
+        }
+
+        <div class="mt-auto pt-8">
+          <ion-button expand="block" type="submit">Continuar</ion-button>
+        </div>
+      </form>
+    } @else {
+      <p class="fm-rotulo m-0">Etapa 2 de 2 · opcional</p>
+      <h1 class="m-0 mt-1 text-2xl font-semibold text-slate-900">Registre pelo WhatsApp</h1>
+      <p class="m-0 mt-2 text-sm leading-relaxed text-slate-500">
+        Mande "gastei 45 no almoço" ou a foto de um comprovante e o lançamento aparece aqui. Para isso, vincule o seu número.
+      </p>
+
+      <div class="fm-cartao mt-7 p-4">
+        <app-vinculo-whatsapp></app-vinculo-whatsapp>
+      </div>
+
+      <div class="mt-auto flex flex-col gap-2 pt-8">
+        @if (vinculado()) {
+          <ion-button expand="block" (click)="concluir()">Ir para o início</ion-button>
+        } @else {
+          <ion-button expand="block" fill="clear" color="medium" (click)="concluir()">Pular por agora</ion-button>
+          <p class="m-0 text-center text-xs text-slate-400">Você pode vincular depois em Mais › Perfil.</p>
+        }
+      </div>
+    }
+  </div>
+</ion-content>

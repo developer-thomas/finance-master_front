@@ -1,0 +1,190 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="dark" aria-label="Voltar" (click)="voltar()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ titulo() }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="fm-container fm-pagina pt-2">
+    @if (naoEncontrada()) {
+      <div class="fm-cartao">
+        <app-estado-vazio icone="search-outline" titulo="Transação não encontrada" texto="Ela pode ter sido excluída.">
+          <ion-button expand="block" fill="outline" routerLink="/app/extrato" routerDirection="root">Ir para o extrato</ion-button>
+        </app-estado-vazio>
+      </div>
+    } @else {
+      <div class="grid gap-4 lg:grid-cols-[1fr_22rem] lg:items-start">
+        <form class="fm-cartao order-2 p-4 md:p-6 lg:order-1" [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+          @if (preenchidoPor()) {
+            <div class="mb-5 flex items-start gap-2 rounded-2xl bg-marca-50 px-3 py-2.5 text-sm text-marca-900" role="status">
+              <ion-icon class="mt-0.5 shrink-0 text-marca-600" name="sparkles-outline" aria-hidden="true"></ion-icon>
+              <span>
+                <strong class="font-semibold">Preenchido a partir {{ preenchidoPor() === 'foto' ? 'da foto' : 'do texto' }}.</strong>
+                Confira os campos e toque em salvar. Nada foi gravado ainda.
+              </span>
+            </div>
+          }
+          @for (aviso of avisos(); track aviso.texto) {
+            <div class="mb-3 flex items-start gap-2 rounded-2xl bg-amber-50 px-3 py-2.5 text-sm text-amber-900">
+              <ion-icon class="mt-0.5 shrink-0" [name]="aviso.icone" aria-hidden="true"></ion-icon>
+              <span>{{ aviso.texto }}</span>
+            </div>
+          }
+
+          <!-- Tipo -->
+          <div class="tipo grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1" role="radiogroup" aria-label="Tipo">
+            <button
+              type="button"
+              role="radio"
+              class="rounded-xl py-2.5 text-sm font-semibold"
+              [class.despesa-ativa]="tipo() === 'DESPESA'"
+              [attr.aria-checked]="tipo() === 'DESPESA'"
+              [disabled]="editando() && tipo() !== 'DESPESA'"
+              (click)="escolherTipo('DESPESA')"
+            >
+              Despesa
+            </button>
+            <button
+              type="button"
+              role="radio"
+              class="rounded-xl py-2.5 text-sm font-semibold"
+              [class.receita-ativa]="tipo() === 'RECEITA'"
+              [attr.aria-checked]="tipo() === 'RECEITA'"
+              [disabled]="editando() && tipo() !== 'RECEITA'"
+              (click)="escolherTipo('RECEITA')"
+            >
+              Receita
+            </button>
+          </div>
+          @if (editando()) {
+            <p class="m-0 mt-1.5 text-xs text-slate-500">O tipo não muda na edição. Se estiver errado, exclua e lance de novo.</p>
+          } @else if (campoInvalido('tipo')) {
+            <p class="m-0 mt-1.5 text-xs text-despesa-600">Escolha se é receita ou despesa.</p>
+          }
+
+          <!-- Valor -->
+          <label class="valor mt-5 flex items-baseline gap-2 rounded-2xl px-4 py-3" [class.invalido]="campoInvalido('valor')">
+            <span class="text-lg font-semibold text-slate-400">R$</span>
+            <input
+              class="fm-numero w-full bg-transparent text-3xl font-bold text-slate-900 outline-none"
+              formControlName="valor"
+              inputmode="decimal"
+              autocomplete="off"
+              placeholder="0,00"
+              aria-label="Valor"
+            />
+          </label>
+          @if (campoInvalido('valor')) {
+            <p class="m-0 mt-1.5 text-xs text-despesa-600">Informe um valor maior que zero, como 49,90.</p>
+          }
+
+          <!-- Descrição -->
+          <ion-input
+            class="fm-input mt-5"
+            fill="outline"
+            label="Descrição"
+            labelPlacement="stacked"
+            placeholder="Ex.: Almoço"
+            formControlName="descricao"
+            [maxlength]="limiteDescricao"
+            helperText="Se ficar vazia, usamos o nome da categoria."
+          ></ion-input>
+
+          <!-- Categoria -->
+          <fieldset class="m-0 mt-5 p-0">
+            <legend class="fm-rotulo mb-2 p-0">Categoria</legend>
+            @if (opcoesCategoria().length) {
+              <div class="flex flex-wrap gap-2">
+                @for (c of opcoesCategoria(); track c.id) {
+                  <button
+                    type="button"
+                    class="chip flex items-center gap-1.5"
+                    [class.ativo]="valoresCategoria() === c.id"
+                    [attr.aria-pressed]="valoresCategoria() === c.id"
+                    (click)="escolherCategoria(c.id)"
+                  >
+                    <ion-icon [name]="c.icone" aria-hidden="true"></ion-icon>
+                    {{ c.nome }}
+                  </button>
+                }
+              </div>
+            } @else {
+              <p class="m-0 text-sm text-slate-500">Escolha o tipo para ver as categorias.</p>
+            }
+            @if (campoInvalido('categoriaId')) {
+              <p class="m-0 mt-1.5 text-xs text-despesa-600">Escolha uma categoria.</p>
+            }
+          </fieldset>
+
+          <div class="mt-5 grid gap-4 md:grid-cols-2">
+            <!-- Conta -->
+            <div>
+              <ion-select
+                class="fm-input"
+                fill="outline"
+                label="Conta"
+                labelPlacement="stacked"
+                interface="popover"
+                placeholder="Escolha a conta"
+                formControlName="contaId"
+              >
+                @for (c of opcoesConta(); track c.id) {
+                  <ion-select-option [value]="c.id">{{ c.rotulo }}</ion-select-option>
+                }
+              </ion-select>
+            </div>
+
+            <!-- Data -->
+            <div>
+              <ion-input class="fm-input" fill="outline" label="Data" labelPlacement="stacked" type="date" formControlName="data"></ion-input>
+              <div class="mt-2 flex gap-2">
+                <button type="button" class="chip pequeno" [class.ativo]="valoresData() === hoje" (click)="escolherData(hoje)">Hoje</button>
+                <button type="button" class="chip pequeno" [class.ativo]="valoresData() === ontem" (click)="escolherData(ontem)">Ontem</button>
+              </div>
+            </div>
+          </div>
+
+          @if (dataFutura()) {
+            <div class="mt-4 flex items-start gap-2 rounded-2xl bg-amber-50 px-3 py-2.5 text-sm text-amber-900">
+              <ion-icon class="mt-0.5 shrink-0" name="calendar-outline" aria-hidden="true"></ion-icon>
+              <span>Data futura: aparece no extrato, mas só entra no saldo e nos totais a partir desse dia.</span>
+            </div>
+          }
+
+          @if (semContaAtiva()) {
+            <div class="mt-4 flex items-start gap-2 rounded-2xl bg-despesa-50 px-3 py-2.5 text-sm text-despesa-700" role="alert">
+              <ion-icon class="mt-0.5 shrink-0" name="alert-circle-outline" aria-hidden="true"></ion-icon>
+              <span>
+                Você não tem conta ativa. Crie ou reative uma em
+                <a class="font-semibold text-despesa-700" routerLink="/app/contas" routerDirection="root">Contas</a> para lançar.
+              </span>
+            </div>
+          }
+
+          @if (erro()) {
+            <p class="m-0 mt-4 text-sm font-medium text-despesa-600" role="alert">{{ erro() }}</p>
+          }
+
+          <div class="mt-6 flex flex-col-reverse gap-2 md:flex-row md:justify-end">
+            <ion-button class="md:w-40" fill="clear" color="medium" type="button" (click)="voltar()">Cancelar</ion-button>
+            <ion-button class="md:w-52" type="submit" [disabled]="salvando() || semContaAtiva()">{{ rotuloSalvar() }}</ion-button>
+          </div>
+        </form>
+
+        @if (!editando()) {
+          <app-entrada-rapida
+            class="order-1 lg:order-2 lg:sticky lg:top-4"
+            [destacar]="modoTexto()"
+            (preenchido)="aplicarLeitura($event)"
+            (falhou)="leituraFalhou()"
+          ></app-entrada-rapida>
+        }
+      </div>
+    }
+  </div>
+</ion-content>

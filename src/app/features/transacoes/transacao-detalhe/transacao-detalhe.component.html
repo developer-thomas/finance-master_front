@@ -1,0 +1,83 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="dark" aria-label="Voltar" (click)="voltar()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Detalhe</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="fm-container fm-pagina detalhe pt-2">
+    @if (transacao(); as t) {
+      <section class="fm-cartao p-5 text-center md:p-8">
+        <span
+          class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl"
+          [class.bg-despesa-50]="t.tipo === 'DESPESA'"
+          [class.text-despesa-600]="t.tipo === 'DESPESA'"
+          [class.bg-receita-50]="t.tipo === 'RECEITA'"
+          [class.text-receita-600]="t.tipo === 'RECEITA'"
+        >
+          <ion-icon class="icone-grande" [name]="icone()" aria-hidden="true"></ion-icon>
+        </span>
+        <p class="m-0 mt-3 text-sm font-medium text-slate-500">{{ t.tipo === 'DESPESA' ? 'Despesa' : 'Receita' }}</p>
+        <p
+          class="fm-numero m-0 mt-1 text-[2rem] font-bold leading-tight"
+          [class.text-despesa-600]="t.tipo === 'DESPESA'"
+          [class.text-receita-600]="t.tipo === 'RECEITA'"
+        >
+          {{ t.valorCentavos | brl: t.tipo }}
+        </p>
+        <h1 class="m-0 mt-2 text-lg font-semibold text-slate-900">{{ t.descricao }}</h1>
+
+        @if (futura()) {
+          <p class="mx-auto mb-0 mt-3 inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">
+            <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
+            Agendada: entra no saldo em {{ t.data | dataCivil }}
+          </p>
+        }
+
+        <dl class="m-0 mt-6 divide-y divide-slate-100 text-left text-sm">
+          <div class="flex justify-between gap-4 py-3">
+            <dt class="text-slate-500">Categoria</dt>
+            <dd class="m-0 font-medium text-slate-900">{{ categoria()?.nome }}</dd>
+          </div>
+          <div class="flex justify-between gap-4 py-3">
+            <dt class="text-slate-500">Conta</dt>
+            <dd class="m-0 text-right font-medium text-slate-900">
+              {{ conta()?.nome }}
+              @if (conta() && !conta()!.ativa) {
+                <span class="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">inativa</span>
+              }
+            </dd>
+          </div>
+          <div class="flex justify-between gap-4 py-3">
+            <dt class="text-slate-500">Data</dt>
+            <dd class="m-0 font-medium text-slate-900">{{ t.data | dataCivil }}</dd>
+          </div>
+        </dl>
+
+        <p class="m-0 mt-4 text-left text-xs text-slate-400">Registrada em {{ registradaEm() }} · {{ origem() }}</p>
+
+        <div class="mt-6 flex flex-col gap-2 md:flex-row-reverse">
+          <ion-button class="md:flex-1" expand="block" [routerLink]="['/app/transacoes', t.id, 'editar']">
+            <ion-icon slot="start" name="create-outline"></ion-icon>
+            Editar
+          </ion-button>
+          <ion-button class="md:flex-1" expand="block" fill="clear" color="danger" (click)="excluir()">
+            <ion-icon slot="start" name="trash-outline"></ion-icon>
+            Excluir
+          </ion-button>
+        </div>
+      </section>
+    } @else {
+      <div class="fm-cartao">
+        <app-estado-vazio icone="search-outline" titulo="Transação não encontrada" texto="Ela pode ter sido excluída.">
+          <ion-button expand="block" fill="outline" routerLink="/app/extrato" routerDirection="root">Ir para o extrato</ion-button>
+        </app-estado-vazio>
+      </div>
+    }
+  </div>
+</ion-content>
