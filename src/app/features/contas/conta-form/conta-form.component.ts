@@ -44,7 +44,7 @@ export class ContaFormComponent implements OnInit {
     this.modal.dismiss(null, 'cancelar');
   }
 
-  salvar(): void {
+  async salvar(): Promise<void> {
     this.erro.set('');
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -59,11 +59,11 @@ export class ContaFormComponent implements OnInit {
     };
     try {
       if (this.conta) {
-        this.contas.editar(this.conta.id, dados);
+        await this.contas.editar(this.conta.id, dados);
       } else {
-        this.contas.criar(dados);
+        await this.contas.criar(dados);
       }
-      this.modal.dismiss(null, 'salvar');
+      await this.modal.dismiss(null, 'salvar');
     } catch (e) {
       this.erro.set(e instanceof ErroRegra ? e.message : 'Não foi possível salvar a conta.');
     }

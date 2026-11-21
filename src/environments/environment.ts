@@ -1,8 +1,8 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:5274',
-  // Enquanto a API autenticada não estiver completa, os dados ficam no navegador, separados por usuário.
-  dadosLocais: true,
+  // false: livro na API (fm_back). true: fallback só no navegador.
+  dadosLocais: false,
   // Preencha com a configuração pública do projeto Firebase. Vazio, o login roda em modo local.
   firebase: {
     apiKey: '',

@@ -75,7 +75,7 @@ export class TransacaoDetalheComponent {
     const { role } = await alerta.onDidDismiss();
     if (role !== 'destructive') return;
 
-    this.transacoes.excluir(t.id);
+    await this.transacoes.excluir(t.id);
     const toast = await this.toast.create({
       message: `${nome.charAt(0).toUpperCase()}${nome.slice(1)} excluída.`,
       duration: 2000,

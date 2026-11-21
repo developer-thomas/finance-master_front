@@ -1,9 +1,11 @@
 import { Injectable, computed, inject } from '@angular/core';
 
+import { environment } from '../../../environments/environment';
 import { CATEGORIAS_PADRAO, CATEGORIA_OUTROS } from '../models/categorias-padrao';
 import { Categoria, TipoTransacao } from '../models/financeiro.model';
 import { BancoLocalService } from './banco-local.service';
 import { ErroRegra } from './erro-regra';
+import { FinanceiroApiService } from './financeiro-api.service';
 
 function chave(nome: string): string {
   return nome
@@ -16,11 +18,17 @@ function chave(nome: string): string {
 @Injectable({ providedIn: 'root' })
 export class CategoriasService {
   private readonly banco = inject(BancoLocalService);
+  private readonly api = inject(FinanceiroApiService);
 
-  readonly todas = computed<Categoria[]>(() => [
-    ...CATEGORIAS_PADRAO,
-    ...[...this.banco.dados().categoriasPersonalizadas].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
-  ]);
+  readonly todas = computed<Categoria[]>(() => {
+    const doBanco = [...this.banco.dados().categoriasPersonalizadas].sort((a, b) =>
+      a.nome.localeCompare(b.nome, 'pt-BR'),
+    );
+    if (!environment.dadosLocais) {
+      return doBanco;
+    }
+    return [...CATEGORIAS_PADRAO, ...doBanco];
+  });
 
   readonly despesa = computed(() => this.todas().filter((c) => c.tipo === 'DESPESA'));
   readonly receita = computed(() => this.todas().filter((c) => c.tipo === 'RECEITA'));
@@ -34,16 +42,24 @@ export class CategoriasService {
   }
 
   outros(tipo: TipoTransacao): Categoria {
-    return this.porId(CATEGORIA_OUTROS[tipo])!;
+    return (
+      this.doTipo(tipo).find((c) => c.nome === 'Outros') ??
+      this.porId(CATEGORIA_OUTROS[tipo])!
+    );
   }
 
-  /** Procura pelo nome, sem diferenciar maiúsculas nem acentos. */
   porNome(tipo: TipoTransacao, nome: string): Categoria | undefined {
     const procurado = chave(nome);
     return this.doTipo(tipo).find((c) => chave(c.nome) === procurado);
   }
 
-  criar(tipo: TipoTransacao, nome: string): Categoria {
+  async criar(tipo: TipoTransacao, nome: string): Promise<Categoria> {
+    if (!environment.dadosLocais) {
+      const categoria = await this.api.criarCategoria(tipo, nome);
+      await this.sincronizar();
+      return categoria;
+    }
+
     const limpo = nome.trim();
     if (!limpo) {
       throw new ErroRegra('Dê um nome para a categoria.');
@@ -60,5 +76,10 @@ export class CategoriasService {
       categoriasPersonalizadas: [...banco.categoriasPersonalizadas, categoria],
     }));
     return categoria;
+  }
+
+  async sincronizar(): Promise<void> {
+    const categorias = await this.api.listarCategorias();
+    this.banco.atualizar((banco) => ({ ...banco, categoriasPersonalizadas: categorias }));
   }
 }

@@ -211,9 +211,9 @@ export class TransacaoFormComponent implements OnInit {
     try {
       const original = this.original();
       if (original) {
-        this.transacoes.editar(original.id, dados);
+        await this.transacoes.editar(original.id, dados);
       } else {
-        this.transacoes.criar({ ...dados, origem: this.origem() });
+        await this.transacoes.criar({ ...dados, origem: this.origem() });
       }
       await this.avisar(original ? 'Alterações salvas.' : dados.tipo === 'RECEITA' ? 'Receita salva.' : 'Despesa salva.');
       this.voltar();

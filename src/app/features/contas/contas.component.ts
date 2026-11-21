@@ -92,13 +92,13 @@ export class ContasComponent {
     await alerta.present();
     const { role } = await alerta.onDidDismiss();
     if (role === 'destructive') {
-      this.contas.desativar(conta.id);
+      await this.contas.desativar(conta.id);
       void this.avisar(`${conta.nome} foi desativada.`);
     }
   }
 
-  reativar(conta: ContaComSaldo): void {
-    this.contas.reativar(conta.id);
+  async reativar(conta: ContaComSaldo): Promise<void> {
+    await this.contas.reativar(conta.id);
     void this.avisar(`${conta.nome} voltou para o saldo total.`);
   }
 

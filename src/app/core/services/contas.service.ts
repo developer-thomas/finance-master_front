@@ -1,8 +1,10 @@
 import { Injectable, computed, inject } from '@angular/core';
 
+import { environment } from '../../../environments/environment';
 import { ContaFinanceira, TipoConta } from '../models/financeiro.model';
 import { BancoLocalService, BancoUsuario } from './banco-local.service';
 import { ErroRegra } from './erro-regra';
+import { FinanceiroApiService } from './financeiro-api.service';
 import { RelogioService } from './relogio.service';
 
 export interface DadosConta {
@@ -21,13 +23,18 @@ export interface ContaComSaldo extends ContaFinanceira {
 export class ContasService {
   private readonly banco = inject(BancoLocalService);
   private readonly relogio = inject(RelogioService);
+  private readonly api = inject(FinanceiroApiService);
 
   readonly todas = computed<ContaComSaldo[]>(() => {
-    const { contas, transacoes } = this.banco.dados();
+    const { contas, transacoes, metasConta } = this.banco.dados();
     const hoje = this.relogio.hoje();
     return [...contas]
       .sort((a, b) => a.criadoEm.localeCompare(b.criadoEm))
       .map((conta) => {
+        const meta = metasConta?.[conta.id];
+        if (meta && !environment.dadosLocais) {
+          return { ...conta, saldoCentavos: meta.saldoCentavos, temLancamentos: meta.temLancamentos };
+        }
         const daConta = transacoes.filter((t) => t.contaId === conta.id);
         const saldo = daConta
           .filter((t) => !t.excluidaEm && t.data <= hoje)
@@ -51,7 +58,13 @@ export class ContasService {
     return this.todas().find((c) => c.id === id);
   }
 
-  criar(dados: DadosConta): ContaFinanceira {
+  async criar(dados: DadosConta): Promise<ContaFinanceira> {
+    if (!environment.dadosLocais) {
+      const criada = await this.api.criarConta(dados);
+      await this.sincronizarContas();
+      return criada;
+    }
+
     const nome = this.validarNome(dados.nome);
     const conta: ContaFinanceira = {
       id: this.banco.novoId(),
@@ -73,7 +86,13 @@ export class ContasService {
     return conta;
   }
 
-  editar(id: string, dados: DadosConta): void {
+  async editar(id: string, dados: DadosConta): Promise<void> {
+    if (!environment.dadosLocais) {
+      await this.api.editarConta(id, dados);
+      await this.sincronizarContas();
+      return;
+    }
+
     const atual = this.obter(id);
     const nome = this.validarNome(dados.nome, id);
     if (dados.saldoInicialCentavos !== atual.saldoInicialCentavos && this.porId(id)?.temLancamentos) {
@@ -92,25 +111,64 @@ export class ContasService {
     });
   }
 
-  tornarPadrao(id: string): void {
-    if (!this.obter(id).ativa) {
+  async tornarPadrao(id: string): Promise<void> {
+    const conta = this.obter(id);
+    if (!conta.ativa) {
       throw new ErroRegra('Só uma conta ativa pode ser a padrão.');
+    }
+    if (!environment.dadosLocais) {
+      await this.api.editarConta(id, {
+        nome: conta.nome,
+        tipo: conta.tipo,
+        saldoInicialCentavos: conta.saldoInicialCentavos,
+        padrao: true,
+      });
+      await this.sincronizarContas();
+      return;
     }
     this.banco.atualizar((banco) => ({ ...banco, contas: this.marcarPadrao(banco.contas, id) }));
   }
 
-  desativar(id: string): void {
+  async desativar(id: string): Promise<void> {
+    if (!environment.dadosLocais) {
+      await this.api.desativarConta(id);
+      await this.sincronizarContas();
+      return;
+    }
     this.banco.atualizar((banco) => {
       const contas = banco.contas.map((c) => (c.id === id ? { ...c, ativa: false, padrao: false } : c));
       return { ...banco, contas: this.garantirPadrao(contas) };
     });
   }
 
-  reativar(id: string): void {
+  async reativar(id: string): Promise<void> {
+    if (!environment.dadosLocais) {
+      await this.api.reativarConta(id);
+      await this.sincronizarContas();
+      return;
+    }
     this.banco.atualizar((banco) => {
       const contas = banco.contas.map((c) => (c.id === id ? { ...c, ativa: true } : c));
       return { ...banco, contas: this.garantirPadrao(contas) };
     });
+  }
+
+  async sincronizarContas(): Promise<void> {
+    const lista = await this.api.listarContas();
+    const metas: Record<string, { saldoCentavos: number; temLancamentos: boolean }> = {};
+    const contas: ContaFinanceira[] = lista.map((c) => {
+      metas[c.id] = { saldoCentavos: c.saldoCentavos, temLancamentos: c.temLancamentos };
+      return {
+        id: c.id,
+        nome: c.nome,
+        tipo: c.tipo,
+        saldoInicialCentavos: c.saldoInicialCentavos,
+        ativa: c.ativa,
+        padrao: c.padrao,
+        criadoEm: c.criadoEm,
+      };
+    });
+    this.banco.atualizar((banco) => ({ ...banco, contas, metasConta: metas }));
   }
 
   private obter(id: string): ContaFinanceira {
@@ -139,7 +197,6 @@ export class ContasService {
     return contas.map((c) => ({ ...c, padrao: c.id === id }));
   }
 
-  /** Sem padrão ativa, a conta ativa mais antiga assume. */
   private garantirPadrao(contas: BancoUsuario['contas']): ContaFinanceira[] {
     if (contas.some((c) => c.ativa && c.padrao)) {
       return contas;
