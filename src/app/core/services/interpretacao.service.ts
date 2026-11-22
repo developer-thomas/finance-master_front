@@ -108,12 +108,34 @@ export class InterpretacaoService {
     return this.lerTextoLocal(texto);
   }
 
-  /** Imagem ainda não tem provedor; devolve falha amigável. */
-  async lerImagem(_arquivo: File): Promise<ResultadoLeitura> {
-    await this.esperar(400);
+  /** Lê comprovante/nota: API (Gemini) ou falha amigável se indisponível. */
+  async lerImagem(arquivo: File): Promise<ResultadoLeitura> {
+    if (!environment.dadosLocais) {
+      try {
+        const remoto = await this.api.interpretarImagem(arquivo);
+        if (!remoto.ok) {
+          return { ok: false, motivo: remoto.motivo };
+        }
+        return {
+          ok: true,
+          sugestao: {
+            tipo: remoto.sugestao.tipo,
+            valorCentavos: Math.round(Number(remoto.sugestao.valor) * 100),
+            data: remoto.sugestao.data,
+            descricao: remoto.sugestao.descricao,
+            categoriaId: remoto.sugestao.categoriaId,
+            categoriaNaoEncontrada: remoto.sugestao.categoriaNaoEncontrada,
+          },
+        };
+      } catch {
+        // Sem API/IA, o formulário manual continua disponível.
+      }
+    }
+
     return {
       ok: false,
-      motivo: 'Não consegui ler o valor total desta imagem. Preencha o formulário ou tente outra foto, mais nítida.',
+      motivo:
+        'Não consegui ler o valor total desta imagem. Preencha o formulário ou tente outra foto, mais nítida.',
     };
   }
 

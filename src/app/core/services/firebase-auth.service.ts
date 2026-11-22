@@ -45,8 +45,8 @@ export class FirebaseAuthService extends AuthService {
     try {
       const credencial = await signInWithEmailAndPassword(this.auth, email.trim(), senha);
       this.atual.set(this.paraSessao(credencial.user));
-    } catch {
-      throw new ErroAutenticacao(MENSAGEM_LOGIN_INVALIDO);
+    } catch (erro) {
+      throw new ErroAutenticacao(this.mensagemErroFirebase(erro, MENSAGEM_LOGIN_INVALIDO));
     }
   }
 
@@ -56,17 +56,9 @@ export class FirebaseAuthService extends AuthService {
       await updateProfile(credencial.user, { displayName: nome.trim() });
       this.atual.set({ uid: credencial.user.uid, nome: nome.trim(), email: credencial.user.email ?? email });
     } catch (erro) {
-      const codigo = erro instanceof FirebaseError ? erro.code : '';
-      if (codigo === 'auth/email-already-in-use') {
-        throw new ErroAutenticacao('Este e-mail já possui uma conta.');
-      }
-      if (codigo === 'auth/weak-password') {
-        throw new ErroAutenticacao('A senha precisa ter pelo menos 8 caracteres.');
-      }
-      if (codigo === 'auth/invalid-email') {
-        throw new ErroAutenticacao('Informe um e-mail válido.');
-      }
-      throw new ErroAutenticacao('Não foi possível criar a conta agora. Tente novamente.');
+      throw new ErroAutenticacao(
+        this.mensagemErroFirebase(erro, 'Não foi possível criar a conta agora. Tente novamente.'),
+      );
     }
   }
 
@@ -85,5 +77,30 @@ export class FirebaseAuthService extends AuthService {
       nome: usuario.displayName ?? usuario.email?.split('@')[0] ?? '',
       email: usuario.email ?? '',
     };
+  }
+
+  private mensagemErroFirebase(erro: unknown, padrao: string): string {
+    const codigo = erro instanceof FirebaseError ? erro.code : '';
+    switch (codigo) {
+      case 'auth/email-already-in-use':
+        return 'Este e-mail já possui uma conta.';
+      case 'auth/weak-password':
+        return 'A senha precisa ter pelo menos 8 caracteres.';
+      case 'auth/invalid-email':
+        return 'Informe um e-mail válido.';
+      case 'auth/network-request-failed':
+        return 'Sem conexão com o Firebase. Verifique a internet e tente de novo.';
+      case 'auth/too-many-requests':
+        return 'Muitas tentativas. Aguarde um pouco e tente de novo.';
+      case 'auth/user-disabled':
+        return 'Esta conta está desativada.';
+      case 'auth/invalid-credential':
+      case 'auth/wrong-password':
+      case 'auth/user-not-found':
+      case 'auth/invalid-login-credentials':
+        return MENSAGEM_LOGIN_INVALIDO;
+      default:
+        return padrao;
+    }
   }
 }

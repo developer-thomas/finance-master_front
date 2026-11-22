@@ -60,6 +60,20 @@ export interface ContaApiComSaldo extends ContaFinanceira {
   temLancamentos: boolean;
 }
 
+export type ResultadoInterpretacaoApi =
+  | {
+      ok: true;
+      sugestao: {
+        tipo: TipoTransacao | null;
+        valor: number;
+        data: string;
+        descricao: string;
+        categoriaId: string | null;
+        categoriaNaoEncontrada: string | null;
+      };
+    }
+  | { ok: false; motivo: string };
+
 /** Cliente HTTP da API fm_back. Converte reais ↔ centavos e propaga ErroRegra. */
 @Injectable({ providedIn: 'root' })
 export class FinanceiroApiService {
@@ -257,35 +271,21 @@ export class FinanceiroApiService {
    * Interpreta texto livre em rascunho de formulário.
    * Não grava transação.
    */
-  interpretarTexto(texto: string): Promise<
-    | {
-        ok: true;
-        sugestao: {
-          tipo: TipoTransacao | null;
-          valor: number;
-          data: string;
-          descricao: string;
-          categoriaId: string | null;
-          categoriaNaoEncontrada: string | null;
-        };
-      }
-    | { ok: false; motivo: string }
-  > {
+  interpretarTexto(texto: string): Promise<ResultadoInterpretacaoApi> {
     return this.pedir(
-      this.http.post<
-        | {
-            ok: true;
-            sugestao: {
-              tipo: TipoTransacao | null;
-              valor: number;
-              data: string;
-              descricao: string;
-              categoriaId: string | null;
-              categoriaNaoEncontrada: string | null;
-            };
-          }
-        | { ok: false; motivo: string }
-      >(`${this.base}/api/interpretacao/texto`, { texto }),
+      this.http.post<ResultadoInterpretacaoApi>(`${this.base}/api/interpretacao/texto`, { texto }),
+    );
+  }
+
+  /**
+   * Interpreta comprovante/nota (imagem) em rascunho de formulário.
+   * Não grava transação.
+   */
+  interpretarImagem(arquivo: File): Promise<ResultadoInterpretacaoApi> {
+    const corpo = new FormData();
+    corpo.append('arquivo', arquivo, arquivo.name);
+    return this.pedir(
+      this.http.post<ResultadoInterpretacaoApi>(`${this.base}/api/interpretacao/imagem`, corpo),
     );
   }
 
