@@ -10,6 +10,7 @@ import {
 
 import { environment } from '../../../../environments/environment';
 import { ErroRegra } from '../../../core/services/erro-regra';
+import { SessaoService } from '../../../core/services/sessao.service';
 import { WhatsappService, formatarNumero } from '../../../core/services/whatsapp.service';
 
 @Component({
@@ -21,6 +22,7 @@ import { WhatsappService, formatarNumero } from '../../../core/services/whatsapp
 })
 export class VinculoWhatsappComponent {
   private readonly whatsapp = inject(WhatsappService);
+  private readonly sessao = inject(SessaoService);
 
   readonly vinculou = output<void>();
 
@@ -30,8 +32,11 @@ export class VinculoWhatsappComponent {
   readonly pendente = this.whatsapp.codigoPendente;
 
   readonly numero = signal('');
+  readonly textoSimulado = signal('gastei 45 no almoço');
   readonly erro = signal('');
+  readonly aviso = signal('');
   readonly trocando = signal(false);
+  readonly enviandoSimulacao = signal(false);
   private readonly agora = signal(Date.now());
 
   readonly numeroVinculado = computed(() => {
@@ -88,6 +93,22 @@ export class VinculoWhatsappComponent {
       this.vinculou.emit();
     } catch (e) {
       this.erro.set(e instanceof ErroRegra ? e.message : 'Não foi possível confirmar.');
+    }
+  }
+
+  /** Dispara um texto como se viesse do WhatsApp e recarrega o livro. */
+  async simularLancamento(): Promise<void> {
+    this.erro.set('');
+    this.aviso.set('');
+    this.enviandoSimulacao.set(true);
+    try {
+      const resultado = await this.whatsapp.simularMensagem(this.textoSimulado());
+      await this.sessao.recarregar();
+      this.aviso.set(resultado.resposta);
+    } catch (e) {
+      this.erro.set(e instanceof ErroRegra ? e.message : 'Não foi possível simular a mensagem.');
+    } finally {
+      this.enviandoSimulacao.set(false);
     }
   }
 }

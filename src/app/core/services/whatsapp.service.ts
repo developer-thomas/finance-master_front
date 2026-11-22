@@ -82,6 +82,21 @@ export class WhatsappService {
     this.banco.atualizar((banco) => ({ ...banco, codigoVinculo: null }));
   }
 
+  /**
+   * Simula texto inbound no número vinculado (grava na conta padrão via API).
+   */
+  async simularMensagem(texto: string): Promise<{ resposta: string; efeito: string | null }> {
+    const vinculo = this.vinculo();
+    if (!vinculo) {
+      throw new ErroRegra('Vincule um número antes de simular uma mensagem.');
+    }
+    if (environment.dadosLocais) {
+      throw new ErroRegra('Simulação de lançamento exige a API (dadosLocais=false).');
+    }
+    const resultado = await this.api.simularMensagemWhatsapp(vinculo.numero, texto);
+    return { resposta: resultado.resposta, efeito: resultado.efeito };
+  }
+
   /** Confirma o código pendente sem WhatsApp real (dev / dadosLocais). */
   async simularConfirmacao(): Promise<void> {
     if (!environment.dadosLocais) {

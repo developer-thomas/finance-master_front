@@ -67,4 +67,37 @@
     </div>
   </div>
   <ion-button class="mt-3" expand="block" fill="outline" (click)="trocando.set(true)">Trocar número</ion-button>
+
+  @if (podeSimular) {
+    <div class="mt-4 rounded-2xl border border-dashed border-slate-200 p-3">
+      <p class="m-0 mb-2 text-xs font-medium text-slate-500">Desenvolvimento — simular mensagem inbound</p>
+      <ion-input
+        class="fm-input"
+        fill="outline"
+        label="Texto da mensagem"
+        labelPlacement="stacked"
+        [value]="textoSimulado()"
+        (ionInput)="textoSimulado.set($any($event).detail.value ?? '')"
+        (keyup.enter)="simularLancamento()"
+      ></ion-input>
+      @if (erro()) {
+        <p class="m-0 mt-2 text-sm text-despesa-600" role="alert">{{ erro() }}</p>
+      }
+      @if (aviso()) {
+        <p class="m-0 mt-2 text-sm text-slate-600">{{ aviso() }}</p>
+      }
+      <ion-button
+        class="mt-2"
+        expand="block"
+        [disabled]="enviandoSimulacao() || !textoSimulado().trim()"
+        (click)="simularLancamento()"
+      >
+        @if (enviandoSimulacao()) {
+          <ion-spinner name="crescent"></ion-spinner>
+        } @else {
+          Simular gasto/receita
+        }
+      </ion-button>
+    </div>
+  }
 }

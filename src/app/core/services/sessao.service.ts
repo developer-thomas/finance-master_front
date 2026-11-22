@@ -44,6 +44,15 @@ export class SessaoService {
     this.banco.fechar();
   }
 
+  /** Força novo sync com a API (ex.: após simular mensagem WhatsApp). */
+  async recarregar(): Promise<void> {
+    if (environment.dadosLocais || !this.auth.usuario()) {
+      return;
+    }
+    this.uidCarregado = null;
+    await this.sincronizar();
+  }
+
   private async sincronizar(): Promise<void> {
     const usuario = this.auth.usuario();
     if (!usuario) {

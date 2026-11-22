@@ -217,6 +217,28 @@ export class FinanceiroApiService {
     );
   }
 
+  /**
+   * Simula mensagem inbound do WhatsApp (só Development na API).
+   * Não exige Bearer — endpoint de desenvolvimento.
+   */
+  simularMensagemWhatsapp(numero: string, texto: string, identificador?: string): Promise<{
+    status: string;
+    efeito: string | null;
+    resposta: string;
+    transacaoId: string | null;
+    identificador: string;
+  }> {
+    return this.pedir(
+      this.http.post<{
+        status: string;
+        efeito: string | null;
+        resposta: string;
+        transacaoId: string | null;
+        identificador: string;
+      }>(`${this.base}/api/whatsapp/dev/mensagem`, { numero, texto, identificador }),
+    );
+  }
+
   /** Emite código de vinculação de 15 minutos. */
   gerarCodigoWhatsapp(numero: string): Promise<{ numero: string; codigo: string; expiraEm: string }> {
     return this.pedir(
