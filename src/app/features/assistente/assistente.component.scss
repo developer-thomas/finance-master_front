@@ -1,0 +1,38 @@
+.lista-chat {
+  max-height: calc(100dvh - 14rem);
+}
+
+.bolha-usuario {
+  margin-left: auto;
+  background: var(--ion-color-primary);
+  color: #fff;
+}
+
+.bolha-assistente {
+  margin-right: auto;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  white-space: pre-wrap;
+}
+
+.campo {
+  --background: #fff;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+}
+
+.sugestao {
+  border: 1px solid #cfe4e0;
+  background: #f0faf8;
+  color: #186b60;
+  border-radius: 999px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: left;
+}

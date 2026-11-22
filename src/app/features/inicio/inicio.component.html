@@ -66,6 +66,21 @@
       </section>
     </div>
 
+    <a
+      class="assistente-atalho mt-4 flex items-center gap-3 rounded-3xl p-4 no-underline"
+      routerLink="/app/assistente"
+      routerDirection="forward"
+    >
+      <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/90 text-marca-700">
+        <ion-icon name="chatbubbles-outline" aria-hidden="true"></ion-icon>
+      </span>
+      <span class="min-w-0 flex-1">
+        <span class="block text-sm font-semibold text-slate-900">Conversar com o assistente</span>
+        <span class="block text-xs text-slate-600">Dúvidas sobre saldo, gastos e hábitos — com números do seu livro</span>
+      </span>
+      <ion-icon class="shrink-0 text-slate-400" name="chevron-forward" aria-hidden="true"></ion-icon>
+    </a>
+
     @if (semContaAtiva()) {
       <div class="mt-4 flex items-start gap-3 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800" role="status">
         <ion-icon class="mt-0.5 shrink-0" name="alert-circle-outline" aria-hidden="true"></ion-icon>

@@ -38,6 +38,11 @@ const routes: Routes = [
         path: 'mais',
         loadChildren: () => import('../features/mais/mais.module').then((m) => m.MaisModule),
       },
+      {
+        path: 'assistente',
+        loadChildren: () =>
+          import('../features/assistente/assistente.module').then((m) => m.AssistenteModule),
+      },
     ],
   },
 ];

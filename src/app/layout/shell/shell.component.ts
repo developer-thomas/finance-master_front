@@ -13,7 +13,7 @@ interface ItemMenu {
 }
 
 /** Rotas que já têm ação principal própria e escondem a barra inferior no celular. */
-const SEM_BARRA = /^\/app\/transacoes\//;
+const SEM_BARRA = /^\/app\/(transacoes|assistente)(\/|$)/;
 
 @Component({
   selector: 'app-shell',
@@ -33,6 +33,7 @@ export class ShellComponent {
   readonly menuLateral: ItemMenu[] = [
     { rotulo: 'Início', icone: 'home-outline', rota: '/app/inicio' },
     { rotulo: 'Extrato', icone: 'list-outline', rota: '/app/extrato' },
+    { rotulo: 'Assistente', icone: 'chatbubbles-outline', rota: '/app/assistente' },
     { rotulo: 'Contas', icone: 'wallet-outline', rota: '/app/contas' },
     { rotulo: 'Categorias', icone: 'pricetags-outline', rota: '/app/categorias' },
     { rotulo: 'Perfil', icone: 'person-circle-outline', rota: '/app/perfil' },
@@ -70,7 +71,9 @@ export class ShellComponent {
   ativo(rota: string): boolean {
     const url = this.url();
     if (rota === '/app/mais') {
-      return ['/app/mais', '/app/categorias', '/app/perfil'].some((r) => url.startsWith(r));
+      return ['/app/mais', '/app/categorias', '/app/perfil', '/app/assistente'].some((r) =>
+        url.startsWith(r),
+      );
     }
     return url.startsWith(rota);
   }

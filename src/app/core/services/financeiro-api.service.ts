@@ -289,6 +289,21 @@ export class FinanceiroApiService {
     );
   }
 
+  /**
+   * Conversa com o assistente. O backend injeta o snapshot do livro; a IA não inventa números.
+   */
+  perguntarAssistente(
+    mensagem: string,
+    historico: { papel: string; texto: string }[],
+  ): Promise<{ texto: string; usouIa: boolean }> {
+    return this.pedir(
+      this.http.post<{ texto: string; usouIa: boolean }>(`${this.base}/api/assistente/mensagem`, {
+        mensagem,
+        historico,
+      }),
+    );
+  }
+
   /** Confirma vínculo sem mensagem real (desenvolvimento). */
   simularConfirmacaoWhatsapp(): Promise<{
     vinculo: { numero: string; vinculadoEm: string } | null;
