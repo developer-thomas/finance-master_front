@@ -1,8 +1,10 @@
 import { Injectable, computed, inject } from '@angular/core';
 
+import { environment } from '../../../environments/environment';
 import { CodigoVinculo } from '../models/financeiro.model';
 import { BancoLocalService } from './banco-local.service';
 import { ErroRegra } from './erro-regra';
+import { FinanceiroApiService } from './financeiro-api.service';
 
 const VALIDADE_CODIGO_MS = 15 * 60 * 1000;
 
@@ -33,6 +35,7 @@ export function formatarNumero(numero: string): string {
 @Injectable({ providedIn: 'root' })
 export class WhatsappService {
   private readonly banco = inject(BancoLocalService);
+  private readonly api = inject(FinanceiroApiService);
 
   readonly vinculo = computed(() => this.banco.dados().vinculo);
 
@@ -41,7 +44,18 @@ export class WhatsappService {
     return codigo && new Date(codigo.expiraEm).getTime() > Date.now() ? codigo : null;
   });
 
-  gerarCodigo(numeroDigitado: string): CodigoVinculo {
+  async gerarCodigo(numeroDigitado: string): Promise<CodigoVinculo> {
+    if (!environment.dadosLocais) {
+      const gerado = await this.api.gerarCodigoWhatsapp(numeroDigitado);
+      const codigo: CodigoVinculo = {
+        numero: gerado.numero,
+        codigo: gerado.codigo,
+        expiraEm: gerado.expiraEm,
+      };
+      this.banco.atualizar((banco) => ({ ...banco, codigoVinculo: codigo }));
+      return codigo;
+    }
+
     const numero = normalizarNumero(numeroDigitado);
     if (!numero) {
       throw new ErroRegra('Informe um celular válido com DDD, por exemplo (11) 98765-4321.');
@@ -59,12 +73,21 @@ export class WhatsappService {
     return codigo;
   }
 
-  cancelarCodigo(): void {
+  async cancelarCodigo(): Promise<void> {
+    if (!environment.dadosLocais) {
+      await this.api.cancelarCodigoWhatsapp();
+    }
     this.banco.atualizar((banco) => ({ ...banco, codigoVinculo: null }));
   }
 
-  /** No modo local não há WhatsApp de verdade: simula a chegada da mensagem com o código. */
-  simularConfirmacao(): void {
+  /** Sem Meta Cloud API ainda: confirma o código pendente do usuário. */
+  async simularConfirmacao(): Promise<void> {
+    if (!environment.dadosLocais) {
+      const status = await this.api.simularConfirmacaoWhatsapp();
+      this.aplicarStatus(status);
+      return;
+    }
+
     const pendente = this.codigoPendente();
     if (!pendente) {
       throw new ErroRegra('O código expirou. Gere um novo.');
@@ -73,6 +96,36 @@ export class WhatsappService {
       ...banco,
       vinculo: { numero: pendente.numero, vinculadoEm: new Date().toISOString() },
       codigoVinculo: null,
+    }));
+  }
+
+  aplicarStatus(status: {
+    vinculo: { numero: string; vinculadoEm: string } | null;
+    codigoPendente: { numero: string; codigo: string; expiraEm: string } | null;
+  }): void {
+    const atual = this.banco.dados().codigoVinculo;
+    const codigoApi = status.codigoPendente;
+    let codigoVinculo: CodigoVinculo | null = null;
+    if (codigoApi) {
+      const digitos =
+        codigoApi.codigo && codigoApi.codigo !== '******'
+          ? codigoApi.codigo
+          : atual?.numero === codigoApi.numero
+            ? atual.codigo
+            : codigoApi.codigo;
+      codigoVinculo = {
+        numero: codigoApi.numero,
+        codigo: digitos,
+        expiraEm: codigoApi.expiraEm,
+      };
+    }
+
+    this.banco.atualizar((banco) => ({
+      ...banco,
+      vinculo: status.vinculo
+        ? { numero: status.vinculo.numero, vinculadoEm: status.vinculo.vinculadoEm }
+        : null,
+      codigoVinculo,
     }));
   }
 }

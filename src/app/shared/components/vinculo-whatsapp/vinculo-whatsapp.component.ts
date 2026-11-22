@@ -24,7 +24,8 @@ export class VinculoWhatsappComponent {
 
   readonly vinculou = output<void>();
 
-  readonly modoLocal = environment.dadosLocais;
+  /** Sem Meta Cloud API, a confirmação continua simulável em desenvolvimento. */
+  readonly podeSimular = !environment.production;
   readonly vinculo = this.whatsapp.vinculo;
   readonly pendente = this.whatsapp.codigoPendente;
 
@@ -64,24 +65,24 @@ export class VinculoWhatsappComponent {
     inject(DestroyRef).onDestroy(() => clearInterval(relogio));
   }
 
-  gerar(): void {
+  async gerar(): Promise<void> {
     this.erro.set('');
     try {
-      this.whatsapp.gerarCodigo(this.numero());
+      await this.whatsapp.gerarCodigo(this.numero());
       this.agora.set(Date.now());
     } catch (e) {
       this.erro.set(e instanceof ErroRegra ? e.message : 'Não foi possível gerar o código.');
     }
   }
 
-  cancelar(): void {
-    this.whatsapp.cancelarCodigo();
+  async cancelar(): Promise<void> {
+    await this.whatsapp.cancelarCodigo();
     this.erro.set('');
   }
 
-  simular(): void {
+  async simular(): Promise<void> {
     try {
-      this.whatsapp.simularConfirmacao();
+      await this.whatsapp.simularConfirmacao();
       this.trocando.set(false);
       this.numero.set('');
       this.vinculou.emit();

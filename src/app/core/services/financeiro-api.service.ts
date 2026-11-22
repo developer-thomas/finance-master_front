@@ -191,6 +191,42 @@ export class FinanceiroApiService {
     return this.pedir(this.http.delete<void>(`${this.base}/api/transacoes/${id}`));
   }
 
+  statusWhatsapp(): Promise<{
+    vinculo: { numero: string; vinculadoEm: string } | null;
+    codigoPendente: { numero: string; codigo: string; expiraEm: string } | null;
+  }> {
+    return this.pedir(
+      this.http.get<{
+        vinculo: { numero: string; vinculadoEm: string } | null;
+        codigoPendente: { numero: string; codigo: string; expiraEm: string } | null;
+      }>(`${this.base}/api/whatsapp`),
+    );
+  }
+
+  gerarCodigoWhatsapp(numero: string): Promise<{ numero: string; codigo: string; expiraEm: string }> {
+    return this.pedir(
+      this.http.post<{ numero: string; codigo: string; expiraEm: string }>(`${this.base}/api/whatsapp/codigo`, {
+        numero,
+      }),
+    );
+  }
+
+  cancelarCodigoWhatsapp(): Promise<void> {
+    return this.pedir(this.http.delete<void>(`${this.base}/api/whatsapp/codigo`));
+  }
+
+  simularConfirmacaoWhatsapp(): Promise<{
+    vinculo: { numero: string; vinculadoEm: string } | null;
+    codigoPendente: { numero: string; codigo: string; expiraEm: string } | null;
+  }> {
+    return this.pedir(
+      this.http.post<{
+        vinculo: { numero: string; vinculadoEm: string } | null;
+        codigoPendente: { numero: string; codigo: string; expiraEm: string } | null;
+      }>(`${this.base}/api/whatsapp/simular-confirmacao`, {}),
+    );
+  }
+
   private mapearConta(c: ContaApi): ContaApiComSaldo {
     return {
       id: c.id,

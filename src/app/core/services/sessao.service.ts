@@ -75,10 +75,11 @@ export class SessaoService {
 
   private async carregarApi(): Promise<void> {
     await this.api.eu();
-    const [contasApi, categorias, transacoes] = await Promise.all([
+    const [contasApi, categorias, transacoes, whatsapp] = await Promise.all([
       this.api.listarContas(),
       this.api.listarCategorias(),
       this.api.listarTransacoes(),
+      this.api.statusWhatsapp(),
     ]);
 
     const metasConta: Record<string, { saldoCentavos: number; temLancamentos: boolean }> = {};
@@ -95,11 +96,31 @@ export class SessaoService {
       };
     });
 
+    const codigoAtual = this.banco.dados().codigoVinculo;
+    const codigoApi = whatsapp.codigoPendente;
+    const codigoVinculo =
+      codigoApi == null
+        ? null
+        : {
+            numero: codigoApi.numero,
+            codigo:
+              codigoApi.codigo !== '******'
+                ? codigoApi.codigo
+                : codigoAtual?.numero === codigoApi.numero
+                  ? codigoAtual.codigo
+                  : codigoApi.codigo,
+            expiraEm: codigoApi.expiraEm,
+          };
+
     this.banco.substituir({
       contas,
       categoriasPersonalizadas: categorias,
       transacoes,
       metasConta,
+      vinculo: whatsapp.vinculo
+        ? { numero: whatsapp.vinculo.numero, vinculadoEm: whatsapp.vinculo.vinculadoEm }
+        : null,
+      codigoVinculo,
     });
   }
 }
