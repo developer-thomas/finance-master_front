@@ -10,3 +10,7 @@ plugins/
 !.env.example
 *.log
 .DS_Store
+
+# Config local (copie de environment.example.ts)
+src/environments/environment.ts
+src/environments/environment.prod.ts

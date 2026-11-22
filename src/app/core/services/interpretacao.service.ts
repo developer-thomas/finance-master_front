@@ -108,35 +108,39 @@ export class InterpretacaoService {
     return this.lerTextoLocal(texto);
   }
 
-  /** Lê comprovante/nota: API (Gemini) ou falha amigável se indisponível. */
+  /** Lê comprovante/nota via API (Gemini). Sem API local não há OCR heurístico. */
   async lerImagem(arquivo: File): Promise<ResultadoLeitura> {
-    if (!environment.dadosLocais) {
-      try {
-        const remoto = await this.api.interpretarImagem(arquivo);
-        if (!remoto.ok) {
-          return { ok: false, motivo: remoto.motivo };
-        }
-        return {
-          ok: true,
-          sugestao: {
-            tipo: remoto.sugestao.tipo,
-            valorCentavos: Math.round(Number(remoto.sugestao.valor) * 100),
-            data: remoto.sugestao.data,
-            descricao: remoto.sugestao.descricao,
-            categoriaId: remoto.sugestao.categoriaId,
-            categoriaNaoEncontrada: remoto.sugestao.categoriaNaoEncontrada,
-          },
-        };
-      } catch {
-        // Sem API/IA, o formulário manual continua disponível.
-      }
+    if (environment.dadosLocais) {
+      return {
+        ok: false,
+        motivo:
+          'Leitura de imagem precisa da API. Desative dadosLocais ou preencha o formulário à mão.',
+      };
     }
 
-    return {
-      ok: false,
-      motivo:
-        'Não consegui ler o valor total desta imagem. Preencha o formulário ou tente outra foto, mais nítida.',
-    };
+    try {
+      const remoto = await this.api.interpretarImagem(arquivo);
+      if (!remoto.ok) {
+        return { ok: false, motivo: remoto.motivo };
+      }
+      return {
+        ok: true,
+        sugestao: {
+          tipo: remoto.sugestao.tipo,
+          valorCentavos: Math.round(Number(remoto.sugestao.valor) * 100),
+          data: remoto.sugestao.data,
+          descricao: remoto.sugestao.descricao,
+          categoriaId: remoto.sugestao.categoriaId,
+          categoriaNaoEncontrada: remoto.sugestao.categoriaNaoEncontrada,
+        },
+      };
+    } catch (erro) {
+      const motivo =
+        erro instanceof Error && erro.message
+          ? erro.message
+          : 'Não consegui ler o valor total desta imagem. Preencha o formulário ou tente outra foto, mais nítida.';
+      return { ok: false, motivo };
+    }
   }
 
   /** Heurística local (fallback e modo dadosLocais). */
