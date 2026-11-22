@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { NavController } from '@ionic/angular';
 
+import { environment } from '../../../../environments/environment';
 import { ErroAutenticacao, MENSAGEM_LOGIN_INVALIDO } from '../../../core/services/auth.service';
 import { SessaoService } from '../../../core/services/sessao.service';
 
@@ -15,6 +16,8 @@ import { SessaoService } from '../../../core/services/sessao.service';
 export class EntrarComponent {
   private readonly sessao = inject(SessaoService);
   private readonly nav = inject(NavController);
+
+  readonly firebaseAtivo = !!environment.firebase.apiKey;
 
   readonly form = inject(NonNullableFormBuilder).group({
     email: ['', [Validators.required, Validators.email]],

@@ -88,12 +88,39 @@ export class SessaoService {
 
   private async carregarApi(): Promise<void> {
     await this.api.eu();
-    const [contasApi, categorias, transacoes, whatsapp] = await Promise.all([
+    const [contasApi, categorias, transacoes] = await Promise.all([
       this.api.listarContas(),
       this.api.listarCategorias(),
       this.api.listarTransacoes(),
-      this.api.statusWhatsapp(),
     ]);
+
+    // WhatsApp é opcional nesta etapa: falha não bloqueia o livro.
+    let vinculo: { numero: string; vinculadoEm: string } | null = null;
+    let codigoVinculo: { numero: string; codigo: string; expiraEm: string } | null = null;
+    try {
+      const whatsapp = await this.api.statusWhatsapp();
+      const codigoAtual = this.banco.dados().codigoVinculo;
+      const codigoApi = whatsapp.codigoPendente;
+      codigoVinculo =
+        codigoApi == null
+          ? null
+          : {
+              numero: codigoApi.numero,
+              codigo:
+                codigoApi.codigo !== '******'
+                  ? codigoApi.codigo
+                  : codigoAtual?.numero === codigoApi.numero
+                    ? codigoAtual.codigo
+                    : codigoApi.codigo,
+              expiraEm: codigoApi.expiraEm,
+            };
+      vinculo = whatsapp.vinculo
+        ? { numero: whatsapp.vinculo.numero, vinculadoEm: whatsapp.vinculo.vinculadoEm }
+        : null;
+    } catch {
+      vinculo = this.banco.dados().vinculo;
+      codigoVinculo = this.banco.dados().codigoVinculo;
+    }
 
     const metasConta: Record<string, { saldoCentavos: number; temLancamentos: boolean }> = {};
     const contas: ContaFinanceira[] = contasApi.map((c) => {
@@ -109,30 +136,12 @@ export class SessaoService {
       };
     });
 
-    const codigoAtual = this.banco.dados().codigoVinculo;
-    const codigoApi = whatsapp.codigoPendente;
-    const codigoVinculo =
-      codigoApi == null
-        ? null
-        : {
-            numero: codigoApi.numero,
-            codigo:
-              codigoApi.codigo !== '******'
-                ? codigoApi.codigo
-                : codigoAtual?.numero === codigoApi.numero
-                  ? codigoAtual.codigo
-                  : codigoApi.codigo,
-            expiraEm: codigoApi.expiraEm,
-          };
-
     this.banco.substituir({
       contas,
       categoriasPersonalizadas: categorias,
       transacoes,
       metasConta,
-      vinculo: whatsapp.vinculo
-        ? { numero: whatsapp.vinculo.numero, vinculadoEm: whatsapp.vinculo.vinculadoEm }
-        : null,
+      vinculo,
       codigoVinculo,
     });
   }

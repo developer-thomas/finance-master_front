@@ -44,10 +44,18 @@ export class CategoriasService {
   }
 
   outros(tipo: TipoTransacao): Categoria {
-    return (
-      this.doTipo(tipo).find((c) => c.nome === 'Outros') ??
-      this.porId(CATEGORIA_OUTROS[tipo])!
-    );
+    const daLista = this.doTipo(tipo).find((c) => c.nome === 'Outros');
+    if (daLista) {
+      return daLista;
+    }
+    // Só usa IDs locais em modo offline; na API os GUIDs vêm do banco.
+    if (environment.dadosLocais) {
+      const local = this.porId(CATEGORIA_OUTROS[tipo]);
+      if (local) {
+        return local;
+      }
+    }
+    throw new ErroRegra('Categoria "Outros" ainda não carregou. Abra o app de novo ou sincronize.');
   }
 
   porNome(tipo: TipoTransacao, nome: string): Categoria | undefined {

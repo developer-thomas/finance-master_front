@@ -58,7 +58,9 @@
     Ainda não tem conta?
     <a class="font-semibold text-marca-700 no-underline" routerLink="/criar-conta">Criar conta</a>
   </p>
-  <p class="m-0 mt-3 text-center text-xs text-slate-400">
-    Dev local: <span class="fm-numero">demo@financemaster.local</span> / <span class="fm-numero">demosenha</span>
-  </p>
+  @if (!firebaseAtivo) {
+    <p class="m-0 mt-3 text-center text-xs text-slate-400">
+      Dev local: <span class="fm-numero">demo@financemaster.local</span> / <span class="fm-numero">demosenha</span>
+    </p>
+  }
 </app-moldura-acesso>
