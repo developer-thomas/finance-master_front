@@ -1,5 +1,6 @@
-.lista-chat {
-  max-height: calc(100dvh - 14rem);
+.chat-corpo {
+  padding-top: 0.5rem;
+  padding-bottom: 1rem;
 }
 
 .bolha-usuario {
@@ -14,6 +15,13 @@
   border: 1px solid #e2e8f0;
   color: #0f172a;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.rodape-chat {
+  background: var(--ion-background-color, #f5f7fa);
+  border-top: 1px solid #e2e8f0;
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .campo {

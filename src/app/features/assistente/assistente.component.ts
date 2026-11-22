@@ -1,7 +1,14 @@
-import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+  inject,
+  signal,
+} from '@angular/core';
+import { IonContent } from '@ionic/angular';
 
-import { FinanceiroApiService } from '../../core/services/financeiro-api.service';
 import { ErroRegra } from '../../core/services/erro-regra';
+import { FinanceiroApiService } from '../../core/services/financeiro-api.service';
 
 export type PapelChat = 'usuario' | 'assistente';
 
@@ -20,7 +27,8 @@ export interface MensagemChat {
 })
 export class AssistenteComponent {
   private readonly api = inject(FinanceiroApiService);
-  private readonly lista = viewChild<ElementRef<HTMLElement>>('lista');
+
+  @ViewChild(IonContent) private conteudo?: IonContent;
 
   readonly mensagens = signal<MensagemChat[]>([
     {
@@ -57,7 +65,7 @@ export class AssistenteComponent {
       { id: this.novoId(), papel: 'usuario', texto },
     ]);
     this.enviando.set(true);
-    this.rolarFim();
+    await this.rolarFim();
 
     try {
       const resposta = await this.api.perguntarAssistente(texto, historico);
@@ -73,20 +81,16 @@ export class AssistenteComponent {
       );
     } finally {
       this.enviando.set(false);
-      this.rolarFim();
+      await this.rolarFim();
     }
+  }
+
+  async rolarFim(): Promise<void> {
+    await new Promise((r) => setTimeout(r, 50));
+    await this.conteudo?.scrollToBottom(250);
   }
 
   private novoId(): string {
     return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  }
-
-  private rolarFim(): void {
-    queueMicrotask(() => {
-      const el = this.lista()?.nativeElement;
-      if (el) {
-        el.scrollTop = el.scrollHeight;
-      }
-    });
   }
 }
