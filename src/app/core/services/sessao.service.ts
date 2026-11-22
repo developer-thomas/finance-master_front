@@ -17,22 +17,26 @@ export class SessaoService {
 
   readonly usuario = this.auth.usuario;
 
+  /** Restaura sessão persistida e carrega o livro (local ou API). */
   async carregar(): Promise<UsuarioSessao | null> {
     await this.auth.aguardarSessao();
     await this.sincronizar();
     return this.auth.usuario();
   }
 
+  /** Login e sync do livro do usuário. */
   async entrar(email: string, senha: string): Promise<void> {
     await this.auth.entrar(email, senha);
     await this.sincronizar();
   }
 
+  /** Cadastro, abre sessão e sync do livro. */
   async criarConta(nome: string, email: string, senha: string): Promise<void> {
     await this.auth.criarConta(nome, email, senha);
     await this.sincronizar();
   }
 
+  /** Encerra sessão e limpa o cache do livro. */
   async sair(): Promise<void> {
     await this.auth.sair();
     this.uidCarregado = null;

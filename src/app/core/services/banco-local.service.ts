@@ -46,6 +46,7 @@ export class BancoLocalService {
   readonly dados = this.estado.asReadonly();
   readonly aberto = computed(() => this.uid() !== null);
 
+  /** Abre o livro do uid (storage completo ou só WhatsApp no modo API). */
   abrir(uid: string): void {
     if (this.uid() === uid) {
       return;
@@ -64,7 +65,7 @@ export class BancoLocalService {
     this.uid.set(uid);
   }
 
-  /** Substitui o livro em memória (usado após carregar a API). */
+  /** Mescla e substitui o estado em memória após sync da API. */
   substituir(banco: Partial<BancoUsuario>): void {
     const uid = this.uid();
     if (!uid) {
@@ -82,11 +83,13 @@ export class BancoLocalService {
     this.estado.set(novo);
   }
 
+  /** Fecha a sessão do livro. */
   fechar(): void {
     this.uid.set(null);
     this.estado.set(bancoVazio());
   }
 
+  /** Aplica alteração imutável e persiste conforme o modo. */
   atualizar(alteracao: (banco: BancoUsuario) => BancoUsuario): void {
     const uid = this.uid();
     if (!uid) {

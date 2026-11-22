@@ -15,11 +15,13 @@ function chave(nome: string): string {
     .replace(/[\u0300-\u036f]/g, '');
 }
 
+/** Categorias padrão (local) ou lista completa vinda da API. */
 @Injectable({ providedIn: 'root' })
 export class CategoriasService {
   private readonly banco = inject(BancoLocalService);
   private readonly api = inject(FinanceiroApiService);
 
+  /** Conjunto visível ao usuário (padrão + personalizadas). */
   readonly todas = computed<Categoria[]>(() => {
     const doBanco = [...this.banco.dados().categoriasPersonalizadas].sort((a, b) =>
       a.nome.localeCompare(b.nome, 'pt-BR'),
@@ -53,6 +55,7 @@ export class CategoriasService {
     return this.doTipo(tipo).find((c) => chave(c.nome) === procurado);
   }
 
+  /** Cria categoria personalizada única por tipo. */
   async criar(tipo: TipoTransacao, nome: string): Promise<Categoria> {
     if (!environment.dadosLocais) {
       const categoria = await this.api.criarCategoria(tipo, nome);
@@ -78,6 +81,7 @@ export class CategoriasService {
     return categoria;
   }
 
+  /** Recarrega categorias a partir da API. */
   async sincronizar(): Promise<void> {
     const categorias = await this.api.listarCategorias();
     this.banco.atualizar((banco) => ({ ...banco, categoriasPersonalizadas: categorias }));

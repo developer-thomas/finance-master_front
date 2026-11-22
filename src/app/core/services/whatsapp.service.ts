@@ -44,6 +44,7 @@ export class WhatsappService {
     return codigo && new Date(codigo.expiraEm).getTime() > Date.now() ? codigo : null;
   });
 
+  /** Emite código de vínculo (API ou local) e guarda no cache. */
   async gerarCodigo(numeroDigitado: string): Promise<CodigoVinculo> {
     if (!environment.dadosLocais) {
       const gerado = await this.api.gerarCodigoWhatsapp(numeroDigitado);
@@ -73,6 +74,7 @@ export class WhatsappService {
     return codigo;
   }
 
+  /** Cancela o código pendente. */
   async cancelarCodigo(): Promise<void> {
     if (!environment.dadosLocais) {
       await this.api.cancelarCodigoWhatsapp();
@@ -80,7 +82,7 @@ export class WhatsappService {
     this.banco.atualizar((banco) => ({ ...banco, codigoVinculo: null }));
   }
 
-  /** Sem Meta Cloud API ainda: confirma o código pendente do usuário. */
+  /** Confirma o código pendente sem WhatsApp real (dev / dadosLocais). */
   async simularConfirmacao(): Promise<void> {
     if (!environment.dadosLocais) {
       const status = await this.api.simularConfirmacaoWhatsapp();
@@ -99,6 +101,7 @@ export class WhatsappService {
     }));
   }
 
+  /** Atualiza vínculo/código no cache a partir da resposta da API. */
   aplicarStatus(status: {
     vinculo: { numero: string; vinculadoEm: string } | null;
     codigoPendente: { numero: string; codigo: string; expiraEm: string } | null;

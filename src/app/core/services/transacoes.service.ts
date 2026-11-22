@@ -34,6 +34,7 @@ export function ordenarTransacoes(a: Transacao, b: Transacao): number {
   return b.data.localeCompare(a.data) || b.criadoEm.localeCompare(a.criadoEm);
 }
 
+/** Lançamentos do livro: mutações locais ou via API + recarga do cache. */
 @Injectable({ providedIn: 'root' })
 export class TransacoesService {
   private readonly banco = inject(BancoLocalService);
@@ -41,6 +42,7 @@ export class TransacoesService {
   private readonly contas = inject(ContasService);
   private readonly api = inject(FinanceiroApiService);
 
+  /** Transações não excluídas, mais recentes primeiro. */
   readonly validas = computed(() =>
     this.banco
       .dados()
@@ -52,6 +54,7 @@ export class TransacoesService {
     return this.validas().find((t) => t.id === id);
   }
 
+  /** Aplica filtros do extrato sobre o cache em memória. */
   filtrar(filtro: FiltroTransacoes): Transacao[] {
     const termo = this.normalizar(filtro.busca ?? '');
     return this.validas().filter((t) => {
@@ -68,6 +71,7 @@ export class TransacoesService {
     });
   }
 
+  /** Cria lançamento e atualiza saldos das contas no modo API. */
   async criar(dados: DadosTransacao): Promise<Transacao> {
     if (!environment.dadosLocais) {
       this.validar(dados);
@@ -89,6 +93,7 @@ export class TransacoesService {
     return transacao;
   }
 
+  /** Edita lançamento; origem permanece a original. */
   async editar(id: string, dados: Omit<DadosTransacao, 'origem'>): Promise<void> {
     const atual = this.porId(id);
     if (!atual) {
@@ -112,6 +117,7 @@ export class TransacoesService {
     }));
   }
 
+  /** Exclui logicamente e recalcula saldos no modo API. */
   async excluir(id: string): Promise<void> {
     if (!environment.dadosLocais) {
       await this.api.excluirTransacao(id);
@@ -127,6 +133,7 @@ export class TransacoesService {
     }));
   }
 
+  /** Substitui o cache de transações pelo extrato da API. */
   async sincronizar(): Promise<void> {
     const transacoes = await this.api.listarTransacoes();
     this.banco.atualizar((banco) => ({ ...banco, transacoes }));

@@ -60,21 +60,25 @@ export interface ContaApiComSaldo extends ContaFinanceira {
   temLancamentos: boolean;
 }
 
+/** Cliente HTTP da API fm_back. Converte reais ↔ centavos e propaga ErroRegra. */
 @Injectable({ providedIn: 'root' })
 export class FinanceiroApiService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiUrl;
 
+  /** Garante usuário interno a partir do token e devolve o perfil. */
   eu(): Promise<{ id: string; firebaseUid: string; nome: string; email: string }> {
     return this.pedir(this.http.get<{ id: string; firebaseUid: string; nome: string; email: string }>(`${this.base}/api/eu`));
   }
 
+  /** Lista contas com saldo e flag de lançamentos. */
   listarContas(): Promise<ContaApiComSaldo[]> {
     return this.pedir(this.http.get<ContaApi[]>(`${this.base}/api/contas`)).then((lista) =>
       lista.map((c) => this.mapearConta(c)),
     );
   }
 
+  /** Cria conta; saldo enviado em reais para a API. */
   criarConta(dados: {
     nome: string;
     tipo: TipoConta;
@@ -91,6 +95,7 @@ export class FinanceiroApiService {
     ).then((c) => this.mapearConta(c));
   }
 
+  /** Atualiza conta existente. */
   editarConta(
     id: string,
     dados: { nome: string; tipo: TipoConta; saldoInicialCentavos: number; padrao: boolean },
@@ -105,20 +110,24 @@ export class FinanceiroApiService {
     ).then((c) => this.mapearConta(c));
   }
 
+  /** Desativa conta (sai do saldo total e de novos lançamentos). */
   desativarConta(id: string): Promise<void> {
     return this.pedir(this.http.post<void>(`${this.base}/api/contas/${id}/desativar`, {}));
   }
 
+  /** Reativa conta previamente desativada. */
   reativarConta(id: string): Promise<void> {
     return this.pedir(this.http.post<void>(`${this.base}/api/contas/${id}/reativar`, {}));
   }
 
+  /** Categorias padrão + personalizadas visíveis ao usuário. */
   listarCategorias(): Promise<Categoria[]> {
     return this.pedir(this.http.get<CategoriaApi[]>(`${this.base}/api/categorias`)).then((lista) =>
       lista.map((c) => ({ id: c.id, tipo: c.tipo, nome: c.nome, escopo: c.escopo })),
     );
   }
 
+  /** Cria categoria personalizada. */
   criarCategoria(tipo: TipoTransacao, nome: string): Promise<Categoria> {
     return this.pedir(this.http.post<CategoriaApi>(`${this.base}/api/categorias`, { tipo, nome })).then((c) => ({
       id: c.id,
@@ -128,6 +137,7 @@ export class FinanceiroApiService {
     }));
   }
 
+  /** Extrato com filtros opcionais. */
   listarTransacoes(filtro: FiltroTransacoesApi = {}): Promise<Transacao[]> {
     let params = new HttpParams();
     if (filtro.de) params = params.set('de', filtro.de);
@@ -142,6 +152,7 @@ export class FinanceiroApiService {
     );
   }
 
+  /** Cria lançamento; valor em centavos no app, reais na API. */
   criarTransacao(dados: {
     tipo: TipoTransacao;
     valorCentavos: number;
@@ -164,6 +175,7 @@ export class FinanceiroApiService {
     ).then((t) => this.mapearTransacao(t));
   }
 
+  /** Atualiza lançamento existente. */
   editarTransacao(
     id: string,
     dados: {
@@ -187,10 +199,12 @@ export class FinanceiroApiService {
     ).then((t) => this.mapearTransacao(t));
   }
 
+  /** Exclusão lógica na API. */
   excluirTransacao(id: string): Promise<void> {
     return this.pedir(this.http.delete<void>(`${this.base}/api/transacoes/${id}`));
   }
 
+  /** Status do vínculo e código pendente. */
   statusWhatsapp(): Promise<{
     vinculo: { numero: string; vinculadoEm: string } | null;
     codigoPendente: { numero: string; codigo: string; expiraEm: string } | null;
@@ -203,6 +217,7 @@ export class FinanceiroApiService {
     );
   }
 
+  /** Emite código de vinculação de 15 minutos. */
   gerarCodigoWhatsapp(numero: string): Promise<{ numero: string; codigo: string; expiraEm: string }> {
     return this.pedir(
       this.http.post<{ numero: string; codigo: string; expiraEm: string }>(`${this.base}/api/whatsapp/codigo`, {
@@ -211,10 +226,12 @@ export class FinanceiroApiService {
     );
   }
 
+  /** Descarta o código pendente. */
   cancelarCodigoWhatsapp(): Promise<void> {
     return this.pedir(this.http.delete<void>(`${this.base}/api/whatsapp/codigo`));
   }
 
+  /** Confirma vínculo sem mensagem real (desenvolvimento). */
   simularConfirmacaoWhatsapp(): Promise<{
     vinculo: { numero: string; vinculadoEm: string } | null;
     codigoPendente: { numero: string; codigo: string; expiraEm: string } | null;

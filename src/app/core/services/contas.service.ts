@@ -19,12 +19,14 @@ export interface ContaComSaldo extends ContaFinanceira {
   temLancamentos: boolean;
 }
 
+/** Contas financeiras: cache local ou API conforme environment.dadosLocais. */
 @Injectable({ providedIn: 'root' })
 export class ContasService {
   private readonly banco = inject(BancoLocalService);
   private readonly relogio = inject(RelogioService);
   private readonly api = inject(FinanceiroApiService);
 
+  /** Todas as contas com saldo calculado (ou metadados da API). */
   readonly todas = computed<ContaComSaldo[]>(() => {
     const { contas, transacoes, metasConta } = this.banco.dados();
     const hoje = this.relogio.hoje();
@@ -58,6 +60,7 @@ export class ContasService {
     return this.todas().find((c) => c.id === id);
   }
 
+  /** Cria conta ativa; no modo API sincroniza o cache depois. */
   async criar(dados: DadosConta): Promise<ContaFinanceira> {
     if (!environment.dadosLocais) {
       const criada = await this.api.criarConta(dados);
@@ -86,6 +89,7 @@ export class ContasService {
     return conta;
   }
 
+  /** Edita conta e bloqueia saldo inicial se já houver lançamentos. */
   async editar(id: string, dados: DadosConta): Promise<void> {
     if (!environment.dadosLocais) {
       await this.api.editarConta(id, dados);
@@ -111,6 +115,7 @@ export class ContasService {
     });
   }
 
+  /** Define a conta ativa como padrão. */
   async tornarPadrao(id: string): Promise<void> {
     const conta = this.obter(id);
     if (!conta.ativa) {
@@ -129,6 +134,7 @@ export class ContasService {
     this.banco.atualizar((banco) => ({ ...banco, contas: this.marcarPadrao(banco.contas, id) }));
   }
 
+  /** Desativa conta e garante outra padrão quando possível. */
   async desativar(id: string): Promise<void> {
     if (!environment.dadosLocais) {
       await this.api.desativarConta(id);
@@ -141,6 +147,7 @@ export class ContasService {
     });
   }
 
+  /** Reativa conta sem tomar o padrão de outra, salvo se for a única ativa. */
   async reativar(id: string): Promise<void> {
     if (!environment.dadosLocais) {
       await this.api.reativarConta(id);
@@ -153,6 +160,7 @@ export class ContasService {
     });
   }
 
+  /** Recarrega contas e saldos a partir da API. */
   async sincronizarContas(): Promise<void> {
     const lista = await this.api.listarContas();
     const metas: Record<string, { saldoCentavos: number; temLancamentos: boolean }> = {};
