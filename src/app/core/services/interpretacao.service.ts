@@ -1,8 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 
+import { environment } from '../../../environments/environment';
 import { TipoTransacao } from '../models/financeiro.model';
 import { lerValorBR } from '../utils/dinheiro.util';
 import { CategoriasService } from './categorias.service';
+import { FinanceiroApiService } from './financeiro-api.service';
 import { RelogioService } from './relogio.service';
 
 /** Sugestão que só preenche o formulário. Nada é gravado aqui. */
@@ -70,16 +72,54 @@ function contemPalavra(texto: string, termo: string): boolean {
 }
 
 /**
- * Leitura local que imita o contrato da interpretação feita pelo backend.
- * Aplica as regras de preenchimento: data ausente vira hoje, categoria desconhecida vira Outros.
+ * Interpretação de texto/foto para preencher o formulário.
+ * Com API ativa, chama o backend; se falhar a rede, cai na heurística local (US-053).
  */
 @Injectable({ providedIn: 'root' })
 export class InterpretacaoService {
   private readonly relogio = inject(RelogioService);
   private readonly categorias = inject(CategoriasService);
+  private readonly api = inject(FinanceiroApiService);
 
+  /** Lê texto livre e devolve sugestão estruturada (sem gravar). */
   async lerTexto(texto: string): Promise<ResultadoLeitura> {
-    await this.esperar(500);
+    if (!environment.dadosLocais) {
+      try {
+        const remoto = await this.api.interpretarTexto(texto);
+        if (!remoto.ok) {
+          return { ok: false, motivo: remoto.motivo };
+        }
+        return {
+          ok: true,
+          sugestao: {
+            tipo: remoto.sugestao.tipo,
+            valorCentavos: Math.round(Number(remoto.sugestao.valor) * 100),
+            data: remoto.sugestao.data,
+            descricao: remoto.sugestao.descricao,
+            categoriaId: remoto.sugestao.categoriaId,
+            categoriaNaoEncontrada: remoto.sugestao.categoriaNaoEncontrada,
+          },
+        };
+      } catch {
+        // Mantém o app útil sem IA/API (US-053).
+      }
+    }
+
+    return this.lerTextoLocal(texto);
+  }
+
+  /** Imagem ainda não tem provedor; devolve falha amigável. */
+  async lerImagem(_arquivo: File): Promise<ResultadoLeitura> {
+    await this.esperar(400);
+    return {
+      ok: false,
+      motivo: 'Não consegui ler o valor total desta imagem. Preencha o formulário ou tente outra foto, mais nítida.',
+    };
+  }
+
+  /** Heurística local (fallback e modo dadosLocais). */
+  private async lerTextoLocal(texto: string): Promise<ResultadoLeitura> {
+    await this.esperar(300);
     const original = texto.trim();
     if (!original) {
       return { ok: false, motivo: 'Escreva o que aconteceu, por exemplo: "gastei 49,90 no almoço hoje".' };
@@ -108,14 +148,6 @@ export class InterpretacaoService {
         categoriaId: categoria.id,
         categoriaNaoEncontrada: categoria.naoEncontrada,
       },
-    };
-  }
-
-  async lerImagem(_arquivo: File): Promise<ResultadoLeitura> {
-    await this.esperar(1200);
-    return {
-      ok: false,
-      motivo: 'Não consegui ler o valor total desta imagem. Preencha o formulário ou tente outra foto, mais nítida.',
     };
   }
 

@@ -231,6 +231,42 @@ export class FinanceiroApiService {
     return this.pedir(this.http.delete<void>(`${this.base}/api/whatsapp/codigo`));
   }
 
+  /**
+   * Interpreta texto livre em rascunho de formulário.
+   * Não grava transação.
+   */
+  interpretarTexto(texto: string): Promise<
+    | {
+        ok: true;
+        sugestao: {
+          tipo: TipoTransacao | null;
+          valor: number;
+          data: string;
+          descricao: string;
+          categoriaId: string | null;
+          categoriaNaoEncontrada: string | null;
+        };
+      }
+    | { ok: false; motivo: string }
+  > {
+    return this.pedir(
+      this.http.post<
+        | {
+            ok: true;
+            sugestao: {
+              tipo: TipoTransacao | null;
+              valor: number;
+              data: string;
+              descricao: string;
+              categoriaId: string | null;
+              categoriaNaoEncontrada: string | null;
+            };
+          }
+        | { ok: false; motivo: string }
+      >(`${this.base}/api/interpretacao/texto`, { texto }),
+    );
+  }
+
   /** Confirma vínculo sem mensagem real (desenvolvimento). */
   simularConfirmacaoWhatsapp(): Promise<{
     vinculo: { numero: string; vinculadoEm: string } | null;
